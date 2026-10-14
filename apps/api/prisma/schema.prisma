@@ -1,0 +1,294 @@
+// Borrador del modelo de COSAVE (Fase 0). Sin migraciones aún: se aplican en la Etapa 1.
+// Ver docs/DATABASE.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  buyer
+  seller
+  agent
+  admin
+}
+
+enum PropertyType {
+  house
+  land
+  apartment
+  commercial
+  other
+}
+
+enum OperationType {
+  sale
+  rent
+}
+
+enum PropertyStatus {
+  draft
+  pending
+  published
+  sold
+  rented
+  paused
+  rejected
+  archived
+}
+
+enum InquiryStatus {
+  pending
+  answered
+}
+
+enum NotificationChannel {
+  email
+  whatsapp
+  push
+}
+
+enum NotificationStatus {
+  pending
+  sent
+  failed
+}
+
+enum SellerRequestKind {
+  self_publish
+  find_agent
+  services
+}
+
+enum SellerRequestStatus {
+  open
+  assigned
+  closed
+}
+
+/// Perfil de usuario. `id` es el uuid de auth.users en Supabase Auth.
+model Profile {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  fullName  String
+  phone     String?
+  city      String?
+  role      UserRole @default(buyer)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedProperties Property[]      @relation("PropertyOwner")
+  favorites       Favorite[]
+  savedSearches   SavedSearch[]
+  notifications   Notification[]
+  inquiries       Inquiry[]
+  sellerRequests  SellerRequest[]
+  professional    Professional?
+}
+
+model Professional {
+  id          String   @id @default(uuid()) @db.Uuid
+  profileId   String   @unique @db.Uuid
+  companyName String?
+  bio         String?
+  licenseNo   String?
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  profile        Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  properties     Property[]      @relation("PropertyAgent")
+  sellerRequests SellerRequest[]
+}
+
+model Property {
+  id          String         @id @default(uuid()) @db.Uuid
+  /// Código público tipo COS-000001, generado desde una secuencia en la Etapa 2.
+  publicCode  String         @unique
+  type        PropertyType
+  operation   OperationType
+  status      PropertyStatus @default(draft)
+  title       String
+  description String?
+  price       Decimal        @db.Decimal(14, 2)
+  currency    String         @default("MXN")
+  ownerId     String         @db.Uuid
+  agentId     String?        @db.Uuid
+  /// Motivo de rechazo o aviso de posible duplicado para el revisor.
+  reviewNote  String?
+  submittedAt DateTime?
+  /// Primera vez que quedó visible; ordena "últimos publicados".
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  owner     Profile           @relation("PropertyOwner", fields: [ownerId], references: [id])
+  agent     Professional?     @relation("PropertyAgent", fields: [agentId], references: [id])
+  location  PropertyLocation?
+  features  PropertyFeatures?
+  images    PropertyImage[]
+  favorites Favorite[]
+  inquiries Inquiry[]
+  matches   SearchMatch[]
+  events    PropertyStatusEvent[]
+
+  @@index([status, operation, type, price])
+  @@index([ownerId])
+}
+
+/// Historial de cambios de estado: nada se borra, solo se retira.
+model PropertyStatusEvent {
+  id         String         @id @default(uuid()) @db.Uuid
+  propertyId String         @db.Uuid
+  fromStatus PropertyStatus
+  toStatus   PropertyStatus
+  actorId    String         @db.Uuid
+  note       String?
+  createdAt  DateTime       @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, createdAt])
+}
+
+model PropertyLocation {
+  propertyId String  @id @db.Uuid
+  state      String
+  city       String
+  zone       String?
+  address    String?
+  postalCode String?
+  latitude   Float?
+  longitude  Float?
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([state, city])
+}
+
+model PropertyFeatures {
+  propertyId   String @id @db.Uuid
+  bedrooms     Int?
+  bathrooms    Int?
+  parkingSpots Int?
+  landAreaM2   Float?
+  builtAreaM2  Float?
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model PropertyImage {
+  id          String   @id @default(uuid()) @db.Uuid
+  propertyId  String   @db.Uuid
+  storagePath String
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, position])
+}
+
+model Favorite {
+  userId     String   @db.Uuid
+  propertyId String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  user     Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, propertyId])
+}
+
+/// Consulta de un usuario al anunciante sobre una propiedad (formulario + bandeja, sin chat).
+/// Los datos de contacto se guardan aquí, copiados del formulario: solo lo que la persona decidió compartir.
+model Inquiry {
+  id           String        @id @default(uuid()) @db.Uuid
+  propertyId   String        @db.Uuid
+  senderId     String        @db.Uuid
+  message      String
+  contactName  String
+  contactEmail String
+  contactPhone String
+  status       InquiryStatus @default(pending)
+  createdAt    DateTime      @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  sender   Profile  @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, createdAt])
+  @@index([propertyId, createdAt])
+}
+
+/// "No encontré lo que busco": criterios guardados para avisar al usuario después.
+model SavedSearch {
+  id           String                @id @default(uuid()) @db.Uuid
+  userId       String                @db.Uuid
+  operation    OperationType
+  propertyType PropertyType?
+  state        String?
+  city         String?
+  zone         String?
+  minPrice     Decimal?              @db.Decimal(14, 2)
+  maxPrice     Decimal?              @db.Decimal(14, 2)
+  minBedrooms  Int?
+  minBathrooms Int?
+  channels     NotificationChannel[]
+  active       Boolean               @default(true)
+  createdAt    DateTime              @default(now())
+
+  user    Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches SearchMatch[]
+
+  @@index([active, operation, propertyType, city])
+}
+
+/// Coincidencia entre una búsqueda guardada y una propiedad publicada.
+model SearchMatch {
+  savedSearchId String    @db.Uuid
+  propertyId    String    @db.Uuid
+  createdAt     DateTime  @default(now())
+  notifiedAt    DateTime?
+
+  savedSearch SavedSearch @relation(fields: [savedSearchId], references: [id], onDelete: Cascade)
+  property    Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([savedSearchId, propertyId])
+}
+
+/// Vendedor que pide publicar solo, buscar asesor o contratar servicios.
+model SellerRequest {
+  id        String              @id @default(uuid()) @db.Uuid
+  sellerId  String              @db.Uuid
+  kind      SellerRequestKind
+  status    SellerRequestStatus @default(open)
+  notes     String?
+  agentId   String?             @db.Uuid
+  createdAt DateTime            @default(now())
+
+  seller Profile       @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  agent  Professional? @relation(fields: [agentId], references: [id])
+
+  @@index([status, kind])
+}
+
+model Notification {
+  id                 String              @id @default(uuid()) @db.Uuid
+  userId             String              @db.Uuid
+  channel            NotificationChannel
+  status             NotificationStatus  @default(pending)
+  subject            String
+  body               String
+  matchSavedSearchId String?             @db.Uuid
+  matchPropertyId    String?             @db.Uuid
+  createdAt          DateTime            @default(now())
+  sentAt             DateTime?
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, channel])
+}
