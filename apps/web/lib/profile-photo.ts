@@ -8,7 +8,8 @@ import { useCallback, useSyncExternalStore } from "react";
  */
 const key = (userId: string) => `cosave:avatar:${userId}`;
 const EVENT = "cosave:avatar-change";
-const MAX_SIDE = 320;
+/** Lado (px) de la foto guardada: el recorte se exporta a este tamaño. */
+export const PHOTO_SIDE = 320;
 
 function read(userId: string): string | null {
   try {
@@ -27,43 +28,15 @@ function subscribe(cb: () => void) {
   };
 }
 
-/** Reduce la imagen a un cuadrado de MAX_SIDE px (recorte centrado) para no llenar el localStorage. */
-function toThumbnail(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      const side = Math.min(img.width, img.height);
-      const canvas = document.createElement("canvas");
-      canvas.width = canvas.height = Math.min(side, MAX_SIDE);
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        URL.revokeObjectURL(url);
-        reject(new Error("canvas no disponible"));
-        return;
-      }
-      ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/jpeg", 0.85));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("imagen no válida"));
-    };
-    img.src = url;
-  });
-}
-
-/** Devuelve la foto elegida por el usuario (o null) y `change(file)` para guardar una nueva. */
-export function useProfilePhoto(userId: string): { photo: string | null; change: (file: File) => Promise<void> } {
+/** Devuelve la foto elegida por el usuario (o null) y `save(dataUrl)` para guardar la ya recortada. */
+export function useProfilePhoto(userId: string): { photo: string | null; save: (dataUrl: string) => void } {
   const photo = useSyncExternalStore(
     subscribe,
     () => read(userId),
     () => null,
   );
-  const change = useCallback(
-    async (file: File) => {
-      const data = await toThumbnail(file);
+  const save = useCallback(
+    (data: string) => {
       try {
         localStorage.setItem(key(userId), data);
       } catch {
@@ -73,5 +46,5 @@ export function useProfilePhoto(userId: string): { photo: string | null; change:
     },
     [userId],
   );
-  return { photo, change };
+  return { photo, save };
 }

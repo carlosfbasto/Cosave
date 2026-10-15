@@ -145,8 +145,35 @@ Cuando un usuario dice "no encontré, pero busco esto":
 
 ## 🗺️ Etapas de desarrollo (Roadmap)
 
+Contrastado con el *Documento Técnico-Funcional y Modelo de Negocio* (secciones 20 y 44). Las etapas 1–6 son el MVP; las fases A–C son el crecimiento posterior al lanzamiento.
+
+### MVP
+
 | Etapa | Qué se hace | Estado |
 |---|---|---|
+| **Fase 0** | Arquitectura, planos, stack | ✅ Completa |
+| **Etapa 1** | Base de datos, usuarios, roles, admin | 🔄 Código listo; falta aplicar migración y probar con Supabase. Falta: registro de acciones importantes (auditoría) y respaldos |
+| **Etapa 2** | Publicar propiedades, fotos, revisión | 🔄 Código listo (publicar, fotos, revisión, Mis propiedades, panel admin, estados, aviso de duplicados); falta aplicar migraciones, crear el bucket y probar con Supabase. Falta: videos / recorridos virtuales, tipos *local, oficina, bodega, rancho* y amenidades |
+| **Etapa 3** | Buscador, filtros, resultados, mapa | 🔄 Listado, ficha, portada y mapa leen del api; falta paginar/filtrar en el servidor (hoy el catálogo carga hasta 500), filtrar por zona/estado/características y por el área visible del mapa |
+| **Etapa 4** | Favoritos, comparador, contacto | 🔄 Favoritos y consultas hechos (falta aplicar migración). **Falta el comparador** |
+| **Etapa 5** | "No encontré lo que busco", asesores, "Quiero vender" | ⏳ Tablas ya modeladas (`SavedSearch`, `SearchMatch`, `SellerRequest`, `Professional`, `Notification`); faltan endpoints y pantallas: búsquedas guardadas + matching, perfil y alta de asesor (con revisión COSAVE), directorio de asesores (el cliente elige), solicitudes de venta/servicios, leads para asesores, avisos por email (Resend) |
+| **Etapa 6** | Pruebas, seguridad, lanzamiento | ⏳ Pruebas automáticas, permisos de documentos, respaldos, auditoría, correcciones y lanzamiento |
+
+### Después del MVP (modelo de negocio)
+
+| Fase | Qué se hace | Estado |
+|---|---|---|
+| **A — Monetización inicial** | Publicación destacada, planes de asesor (básico/profesional/premium), pagos (Stripe o Conekta), servicios seleccionados | ⏳ Sin iniciar; requiere decidir pasarela (ver `docs/DECISIONS.md`) |
+| **B — Consolidación** | Verificación de propiedad (3 niveles), prospectos de pago, marketplace de servicios, inmobiliarias / desarrolladores (COSAVE PRO), publicidad, WhatsApp y push | ⏳ |
+| **C — Escalamiento** | Capa de integraciones (conectores, normalizador, `Source`, `ImportLog`), detección de duplicados y "Ver otras publicaciones", app móvil, IA (lenguaje natural, precio sugerido), inteligencia de mercado | ⏳ Hoy solo hay base: código `COS-` y aviso de posible duplicado al publicar |
+
+### Hecho vs. pendiente respecto al documento
+
+- **Cubierto:** usuarios y roles (comprador, vendedor, asesor, admin), propiedades con ubicación/características/fotos, ID `COS-000001`, flujo de publicación con revisión y estados, favoritos, contacto, mapa, panel admin (usuarios, propiedades, solicitudes), arquitectura API-first.
+- **Brecha principal del MVP:** la función estratégica *"Estoy buscando una propiedad / No encontré lo que busco"* y el flujo de asesores (Etapa 5), más el comparador (Etapa 4).
+- **Brechas de modelo de datos:** `PROPERTY_SOURCES`, `PROPERTY_VERIFICATION`, `PROFESSIONAL_SERVICES/AREAS`, `LEADS/LEAD_ASSIGNMENTS`, `SOURCES`, `IMPORT_LOGS`, y operación de estado comercial "apartada".
+
+---|---|---|
 | **Fase 0** | Arquitectura, planos, stack | ✅ Completa |
 | **Etapa 1** | Base de datos, usuarios, admin | 🔄 Código listo; falta aplicar migración y probar con Supabase |
 | **Etapa 2** | Publicar propiedades, fotos | 🔄 Código listo (publicar, fotos, revisión, Mis propiedades, panel admin); falta aplicar migraciones, crear el bucket y probar con Supabase |

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useCurrentUser } from "@/lib/current-user";
 import { useProfilePhoto } from "@/lib/profile-photo";
+import { PhotoCropper } from "@/components/user/photo-cropper";
 import { showToast } from "@/lib/toast";
 
 const SIZE = 112;
@@ -10,23 +11,29 @@ const SIZE = 112;
 /** Foto redonda con contorno blanco + nombre y correo, sin tarjeta. Solo el dueño puede cambiar la foto. */
 export function ProfileHeader({ user }: { user: { id: string; fullName: string; email: string; avatar: string } }) {
   const me = useCurrentUser();
-  const { photo, change } = useProfilePhoto(user.id);
+  const { photo, save } = useProfilePhoto(user.id);
+  const [pending, setPending] = useState<File | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const isOwner = me.id === user.id;
   const src = photo ?? user.avatar;
 
-  async function onFile(file: File | undefined) {
+  function onFile(file: File | undefined) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
       showToast("Elige un archivo de imagen");
       return;
     }
+    setPending(file);
+  }
+
+  function onSave(dataUrl: string) {
     try {
-      await change(file);
+      save(dataUrl);
       showToast("Foto de perfil actualizada");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "No se pudo cambiar la foto");
     }
+    setPending(null);
   }
 
   const img = (
@@ -59,7 +66,7 @@ export function ProfileHeader({ user }: { user: { id: string; fullName: string; 
             accept="image/*"
             hidden
             onChange={(e) => {
-              void onFile(e.target.files?.[0]);
+              onFile(e.target.files?.[0]);
               e.target.value = "";
             }}
           />
@@ -73,6 +80,7 @@ export function ProfileHeader({ user }: { user: { id: string; fullName: string; 
         <h1 className="truncate text-[20px] font-semibold text-navy">{user.fullName}</h1>
         {isOwner && <p className="truncate text-[16px] font-normal text-slate-600">{user.email}</p>}
       </div>
+      {pending && <PhotoCropper key={`${pending.name}-${pending.lastModified}`} file={pending} onSave={onSave} onCancel={() => setPending(null)} />}
     </div>
   );
 }

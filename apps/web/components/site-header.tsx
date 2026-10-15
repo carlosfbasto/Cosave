@@ -8,7 +8,7 @@ import { AuthLink } from "./auth-link";
 import { SearchBox } from "./search-box";
 import { NotificationsMenu } from "./notifications-menu";
 import { UserMenu } from "./user-menu";
-import { Avatar } from "@/components/user/avatar";
+import { UserAvatar } from "@/components/user/user-avatar";
 import { signOutAll, useSession } from "@/lib/auth";
 import { useDemoUser } from "@/lib/demo-session";
 import { useProfile } from "@/lib/use-profile";
@@ -99,7 +99,7 @@ function Nav() {
           </Link>
           <NotificationsMenu userId={demo.id} />
           <UserMenu name={demo.fullName} profileHref={`/profile/${demo.id}`} onSignOut={logout}>
-            <Avatar user={demo} size={36} />
+            <UserAvatar userId={demo.id} name={demo.fullName} fallbackSrc={demo.avatar} size={36} />
           </UserMenu>
         </>
       ) : (
@@ -121,9 +121,7 @@ function Nav() {
               ]}
               onSignOut={logout}
             >
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-accent text-sm font-bold text-navy">
-                {sessionName(session).charAt(0).toUpperCase()}
-              </span>
+              <UserAvatar userId={session.user.id} name={sessionName(session)} size={36} />
             </UserMenu>
           </>
         ) : (
