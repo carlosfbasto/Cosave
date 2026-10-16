@@ -95,7 +95,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
                 <span className="text-xs font-semibold text-slate-500">MXN{isRent && " /mes"}</span>
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
-                {!unavailable && <WantItButton code={p.code} variant="detail" />}
+                {!unavailable && <WantItButton code={p.code} title={p.title} />}
                 {!unavailable && <FavoriteAction code={p.code} />}
                 <ShareButton code={p.code} title={p.title} />
               </div>

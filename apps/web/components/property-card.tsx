@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { WantItButton } from "@/components/want-it-button";
 import { FavoriteButton } from "@/components/favorite-button";
 import { formatMxn, type MockProperty } from "@/lib/mock-data";
 
@@ -78,7 +77,6 @@ export function PropertyCard({ p, smallStats = false }: { p: MockProperty; small
             {p.area} m²
           </Stat>
         </div>
-        <WantItButton code={p.code} />
       </div>
     </article>
   );
