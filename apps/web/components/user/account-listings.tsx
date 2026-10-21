@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { allowedTransitions, editScope, PROPERTY_STATUS_LABEL, type PropertyStatus } from "@cosave/shared";
+import { allowedTransitions, editScope, PROPERTY_STATUS_LABEL, PROPERTY_TYPE_LABEL, type PropertyStatus } from "@cosave/shared";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { STATUS_STYLE } from "@/components/status-badge";
 import { NoticeCard } from "@/components/notice-card";
@@ -15,8 +15,6 @@ import { formatMxn } from "@/lib/mock-data";
 import { formatDate } from "@/lib/mock-users";
 import { mineApi, useMyProperties, type MyProperty } from "@/lib/my-properties";
 import { showToast } from "@/lib/toast";
-
-const TYPE_LABEL = { house: "Casa", apartment: "Departamento", land: "Terreno", commercial: "Local / bodega comercial", other: "Otro" } as const;
 
 const btn = "cursor-pointer rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-navy hover:text-navy disabled:cursor-not-allowed disabled:opacity-50";
 const btnPrimary = "cursor-pointer rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-navy transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50";
@@ -83,7 +81,7 @@ function Card({ p, onUpdate }: { p: MyProperty; onUpdate: (next: MyProperty) => 
             {isRent && p.price > 0 && <span className="text-sm font-normal text-slate-600"> /mes</span>}
           </p>
           <p className="text-sm text-slate-600">
-            {TYPE_LABEL[p.type]} en {isRent ? "renta" : "venta"}
+            {PROPERTY_TYPE_LABEL[p.type]} en {isRent ? "renta" : "venta"}
             {(p.city || p.zone) && ` · ${[p.zone, p.city].filter(Boolean).join(", ")}`}
           </p>
           <p className="text-xs text-slate-500">

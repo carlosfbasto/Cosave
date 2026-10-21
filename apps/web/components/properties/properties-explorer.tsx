@@ -4,12 +4,15 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { PropertyGrid } from "@/components/property-card";
+import { loginUrl } from "@/lib/auth";
+import { useCurrentUser } from "@/lib/current-user";
 import { rememberResults } from "@/lib/last-results";
 import { formatMxn, USD_RATE, type ListedProperty } from "@/lib/mock-data";
 import { useCatalog } from "@/lib/use-catalog";
 import { matchesQuery, parseQuery } from "@/lib/search";
 import { emptyFilters, FiltersSidebar } from "./filters-sidebar";
 import type { Range } from "./range-filter";
+import { draftFromSearch, SaveSearchModal } from "./save-search-modal";
 import { parseSearch, toQuery, type SearchState, type Sort } from "./url-state";
 
 export type Operation = "all" | "sale" | "rent";
@@ -29,6 +32,8 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const me = useCurrentUser();
 
   // Filtros, orden y búsqueda viven en la URL: sobreviven a "atrás", a recargar y se pueden compartir.
   const search = searchParams.toString();
@@ -90,6 +95,12 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
     parsed.minPrice !== undefined && `desde ${formatMxn(parsed.minPrice)}`,
     parsed.maxPrice !== undefined && `hasta ${formatMxn(parsed.maxPrice)}`,
   ].filter(Boolean).join(" ");
+
+  // Guardar la búsqueda requiere cuenta: sin sesión va al login y regresa a esta misma lista.
+  const openSaveSearch = () => {
+    if (me.id) setSaveOpen(true);
+    else router.push(loginUrl(`${pathname}${query}`, "login", undefined, `${pathname}${query}`));
+  };
 
   const title = operation === "sale" ? "Propiedades en venta" : operation === "rent" ? "Propiedades en renta" : "Todas las propiedades";
 
@@ -162,6 +173,9 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
                   {q ? <>No encontramos propiedades para “{q}”{hasFilters && " con estos filtros"}.</> : "No hay propiedades con estos filtros."}
                 </p>
                 <div className="flex flex-wrap gap-4 text-sm font-semibold text-navy">
+                  <button type="button" onClick={openSaveSearch} disabled={me.loading} className="cursor-pointer underline">
+                    Guardar mi búsqueda
+                  </button>
                   {hasFilters && (
                     <button type="button" onClick={reset} className="cursor-pointer underline">
                       Limpiar filtros
@@ -181,6 +195,11 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
           </section>
         </div>
       </div>
+      <SaveSearchModal
+        open={saveOpen}
+        initial={draftFromSearch(operation, filters, q, parsed, facets)}
+        onClose={() => setSaveOpen(false)}
+      />
     </main>
   );
 }

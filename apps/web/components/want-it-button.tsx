@@ -1,37 +1,37 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginUrl, useSession } from "@/lib/auth";
-import { useDemoUser } from "@/lib/demo-session";
+import { loginUrl } from "@/lib/auth";
+import { useCurrentUser } from "@/lib/current-user";
+import { ContactModal } from "@/components/property-detail/contact-modal";
 
 /**
- * "Me interesa": con sesión lleva al formulario de contacto de la propiedad;
- * sin sesión, al login, y al entrar regresa al formulario.
+ * "Me interesa": con sesión abre el modal de contacto con el anunciante;
+ * sin sesión, lleva al login y al entrar regresa a la ficha.
  */
-export function WantItButton({ code, variant = "card" }: { code: string; variant?: "card" | "detail" }) {
+export function WantItButton({ code, title }: { code: string; title: string }) {
   const router = useRouter();
-  const { session, loading } = useSession();
-  const { user } = useDemoUser();
-  const target = `/contacto/${code}`;
-  const authed = loading || !!session || !!user;
-  const href = authed ? target : loginUrl(target, "login", "contacto");
+  const { id, loading } = useCurrentUser();
+  const [open, setOpen] = useState(false);
+  const authed = !!id;
   const cls =
-    variant === "detail"
-      ? "rounded-md bg-accent px-5 py-2 text-[0.9rem] font-semibold text-navy transition-colors hover:bg-accent-hover"
-      : "mt-1 block w-full rounded-md border border-navy px-3 py-2 text-center text-[0.9rem] font-semibold text-navy transition-colors hover:bg-accent hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
+    "cursor-pointer rounded-md bg-accent px-5 py-2 text-[0.9rem] font-semibold text-navy transition-colors hover:bg-accent-hover";
   return (
-    <Link
-      href={href}
-      className={cls}
-      onClick={(e) => {
-        if (authed || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-        // Recuerda dónde estaba (lista con filtros o ficha) para "← Volver" en el login.
-        e.preventDefault();
-        router.push(loginUrl(target, "login", "contacto", window.location.pathname + window.location.search));
-      }}
-    >
-      Me interesa
-    </Link>
+    <>
+      <button
+        type="button"
+        className={cls}
+        disabled={loading}
+        onClick={() => {
+          if (authed) setOpen(true);
+          // Recuerda dónde estaba (lista con filtros o ficha) para "← Volver" en el login.
+          else router.push(loginUrl(`/properties/${code}`, "login", "contacto", window.location.pathname + window.location.search));
+        }}
+      >
+        Me interesa
+      </button>
+      <ContactModal open={open} code={code} title={title} onClose={() => setOpen(false)} />
+    </>
   );
 }

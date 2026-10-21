@@ -36,5 +36,6 @@ Respuestas exitosas: `{ "data": ..., "meta": ... }`. Error de validación: 422 c
 | 4 ✅ | `POST /properties/:code/contact` | "Me interesa": body `{ message, contactName, contactEmail, contactPhone }`. 201; 409 `unavailable` si no está publicada o `own_property` si es tuya |
 | 4 ✅ | `GET /inquiries?property=` | Mis consultas enviadas (opcional: solo de una propiedad) |
 | 4 ✅ | `GET /inquiries/received` | Consultas recibidas en mis propiedades (con los datos de contacto compartidos) |
-| 5 | `POST/GET/DELETE /saved-searches` | Búsquedas guardadas |
+| 5 ✅ | `GET /saved-searches` | Mis búsquedas guardadas activas (más recientes primero). Requiere cuenta |
+| 5 ✅ | `POST /saved-searches` · `DELETE /saved-searches/:id` | Guardar criterios `{ operation, propertyType?, state?, city?, minPrice?, maxPrice? }` (201) / eliminar una búsqueda propia |
 | 5 | `GET /professionals` · `POST /seller-requests` | Asesores y solicitudes |
