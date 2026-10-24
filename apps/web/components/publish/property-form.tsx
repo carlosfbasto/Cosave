@@ -11,6 +11,7 @@ import {
   OPERATION_TYPES,
   PROPERTY_STATUS_LABEL,
   propertyDraftSchema,
+  PROPERTY_TYPE_LABEL,
   PROPERTY_TYPES,
   REQUIRED_FIELD_LABEL,
   type FeatureField,
@@ -33,13 +34,6 @@ const LocationPicker = dynamic(() => import("@/components/location-picker").then
   loading: () => <div className="grid h-72 place-items-center rounded-lg border border-slate-300 bg-slate-100 text-sm text-slate-500">Cargando mapa…</div>,
 });
 
-const TYPE_LABEL: Record<PropertyType, string> = {
-  house: "Casa",
-  apartment: "Departamento",
-  land: "Terreno",
-  commercial: "Local / bodega comercial",
-  other: "Otro",
-};
 const OPERATION_LABEL = { sale: "Venta", rent: "Renta" } as const;
 const FEATURE_LABEL: Record<FeatureField, string> = {
   bedrooms: "Recámaras",
@@ -355,7 +349,7 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
                 </Field>
                 <Field label="Tipo de propiedad" error={errors["type"]}>
                   <select value={values["type"]} disabled={locked("type")} onChange={(e) => set("type", e.target.value)} className={input}>
-                    {PROPERTY_TYPES.map((t) => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
+                    {PROPERTY_TYPES.map((t) => <option key={t} value={t}>{PROPERTY_TYPE_LABEL[t]}</option>)}
                   </select>
                 </Field>
               </div>
@@ -433,7 +427,7 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
                   {formatMxn(Number(values["price"]) || 0)} <span className="text-xs font-semibold text-slate-500">MXN{values["operation"] === "rent" && " /mes"}</span>
                 </p>
                 <p className="text-sm text-slate-600">
-                  {TYPE_LABEL[type]} · {[values["zone"], values["city"], values["state"]].filter(Boolean).join(", ")}
+                  {PROPERTY_TYPE_LABEL[type]} · {[values["zone"], values["city"], values["state"]].filter(Boolean).join(", ")}
                   {values["postalCode"] && ` · C.P. ${values["postalCode"]}`}
                 </p>
                 {features.some((f) => values[f]) && (

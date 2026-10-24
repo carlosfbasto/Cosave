@@ -6,7 +6,7 @@ import { useCurrentUser } from "@/lib/current-user";
 
 const icon = { viewBox: "0 0 24 24", className: "h-[18px] w-[18px] shrink-0", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true } as const;
 
-/** `own`: solo el dueño del perfil la ve (favoritos y consultas son privados). */
+/** `own`: solo el dueño del perfil la ve (favoritos, consultas y búsquedas guardadas son privados). */
 const links = (id: string) => [
   {
     href: `/profile/${id}`,
@@ -35,6 +35,16 @@ const links = (id: string) => [
         <path d="M6 7h13l-1.5 8H8L6 4H3" />
         <circle cx="9" cy="19" r="1.2" />
         <circle cx="17" cy="19" r="1.2" />
+      </svg>
+    ),
+  },
+  {
+    href: `/profile/${id}/busquedas`,
+    label: "Mis búsquedas guardadas", own: true,
+    icon: (
+      <svg {...icon}>
+        <circle cx="11" cy="11" r="6" />
+        <path d="M20 20l-4.5-4.5" />
       </svg>
     ),
   },

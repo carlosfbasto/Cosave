@@ -29,6 +29,15 @@ export const UNAVAILABLE_LABEL: Partial<Record<PropertyStatus, string>> = {
   archived: "Retirada",
 };
 
+/** Nombre de cada tipo de inmueble para el usuario. */
+export const PROPERTY_TYPE_LABEL: Record<PropertyType, string> = {
+  house: "Casa",
+  apartment: "Departamento",
+  land: "Terreno",
+  commercial: "Local / bodega comercial",
+  other: "Otro",
+};
+
 export const INQUIRY_STATUS_LABEL: Record<InquiryStatus, string> = {
   pending: "Pendiente",
   answered: "Respondida",

@@ -7,7 +7,7 @@ const STOP = new Set([
 ]);
 
 /** Minúsculas y sin acentos, para comparar "Mérida" con "merida". */
-const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+export const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** "casas" → "casa": tolera plurales sencillos. */
 const stem = (w: string) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w);
