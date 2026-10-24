@@ -81,7 +81,7 @@ export function PhotosStep({
   return (
     <section className={card}>
       <div>
-        <h2 className="text-lg font-bold text-navy">Fotografías</h2>
+        <h2 className="text-lg font-bold text-ink">Fotografías</h2>
         <p className="text-sm text-slate-600">
           Formatos {IMAGE_LABEL}. Máximo {IMAGE_LIMITS.maxCount} fotos de {mb(IMAGE_LIMITS.maxBytes)} MB cada una. La primera es la principal y se ve en los resultados.
         </p>
@@ -109,27 +109,27 @@ export function PhotosStep({
       )}
 
       {problems.length > 0 && (
-        <ul role="alert" className="space-y-1 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <ul role="alert" className="space-y-1 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {problems.map((p) => <li key={p}>{p}</li>)}
         </ul>
       )}
 
       {images.length === 0 ? (
-        <p className="rounded-md border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">Aún no hay fotos. Agrega al menos una para poder enviar tu propiedad.</p>
+        <p className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">Aún no hay fotos. Agrega al menos una para poder enviar tu propiedad.</p>
       ) : (
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {images.map((img, i) => (
             <li key={img.id} className="overflow-hidden rounded-lg border border-slate-200">
               <div className="relative aspect-[4/3]">
                 <Image src={img.url} alt={`Foto ${i + 1}`} fill sizes="(min-width: 640px) 220px, 45vw" className="object-cover" />
-                {i === 0 && <span className="absolute left-2 top-2 rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-navy shadow">Principal</span>}
+                {i === 0 && <span className="absolute left-2 top-2 rounded-full bg-azure px-2.5 py-0.5 text-xs font-bold text-white shadow">Principal</span>}
               </div>
               {!readOnly && (
                 <div className="flex items-center justify-between gap-2 p-2 text-xs font-semibold">
                   {i === 0 ? (
                     <span className="text-slate-500">Foto principal</span>
                   ) : (
-                    <button type="button" disabled={!!busy} onClick={() => void run("Cambiando la principal…", () => mineApi.setCover(property.id, img.id))} className="cursor-pointer text-navy underline disabled:opacity-50">
+                    <button type="button" disabled={!!busy} onClick={() => void run("Cambiando la principal…", () => mineApi.setCover(property.id, img.id))} className="cursor-pointer text-ink underline disabled:opacity-50">
                       Hacer principal
                     </button>
                   )}

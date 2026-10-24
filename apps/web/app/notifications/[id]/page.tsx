@@ -27,12 +27,12 @@ export default function NotificationsPage({ params }: PageProps<"/notifications/
     <main className="flex-1 bg-slate-50">
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-          <BackButton className="font-medium text-navy transition-colors hover:text-accent-hover" />
-          <Link href={`/profile/${user.id}`} className="text-slate-500 transition-colors hover:text-navy">Mi perfil</Link>
+          <BackButton className="font-medium text-ink transition-colors hover:text-azure-hover" />
+          <Link href={`/profile/${user.id}`} className="text-slate-500 transition-colors hover:text-ink">Mi perfil</Link>
         </div>
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-navy">Notificaciones</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-ink">Notificaciones</h1>
             <p className="mt-1 text-sm text-slate-600">
               {notes.items.length === 0 ? "Por el momento no tienes notificaciones." : notes.unread === 0 ? "Estás al día." : `${notes.unread} sin leer.`}
             </p>
@@ -44,7 +44,7 @@ export default function NotificationsPage({ params }: PageProps<"/notifications/
                 notes.markAllRead();
                 showToast("Todas marcadas como leídas");
               }}
-              className="cursor-pointer text-sm font-semibold text-navy underline transition-colors hover:text-accent-hover"
+              className="cursor-pointer text-sm font-semibold text-ink underline transition-colors hover:text-azure-hover"
             >
               Marcar todas como leídas
             </button>
@@ -55,11 +55,11 @@ export default function NotificationsPage({ params }: PageProps<"/notifications/
           {notes.items.map((n) => (
             <li
               key={n.id}
-              className={`flex gap-4 rounded-xl border p-4 shadow-sm ${n.read ? "border-slate-200 bg-white" : "border-accent/60 bg-accent/10"}`}
+              className={`flex gap-4 rounded-xl border p-4 ${n.read ? "border-slate-200 bg-white" : "border-azure/60 bg-azure/10"}`}
             >
-              <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-accent"}`} aria-label={n.read ? "Leída" : "Sin leer"} />
+              <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-azure"}`} aria-label={n.read ? "Leída" : "Sin leer"} />
               <div className="min-w-0 flex-1">
-                <h2 className="font-bold text-navy">{n.title}</h2>
+                <h2 className="font-bold text-ink">{n.title}</h2>
                 <p className="mt-0.5 text-sm text-slate-600">{n.body}</p>
                 <p className="mt-1 text-xs text-slate-500">{formatDate(n.createdAt)}</p>
                 <div className="mt-3 flex flex-wrap gap-3 text-sm">
@@ -67,13 +67,13 @@ export default function NotificationsPage({ params }: PageProps<"/notifications/
                     <Link
                       href={`/properties/${n.propertyCode}`}
                       onClick={() => notes.markRead(n.id)}
-                      className="rounded-md bg-accent px-3 py-1.5 font-semibold text-navy transition-colors hover:bg-accent-hover"
+                      className="rounded-lg bg-ink px-3 py-1.5 font-semibold text-white transition-colors hover:bg-ink-hover"
                     >
                       Ver propiedad
                     </Link>
                   )}
                   {!n.read && (
-                    <button type="button" onClick={() => notes.markRead(n.id)} className="cursor-pointer font-medium text-slate-600 underline hover:text-navy">
+                    <button type="button" onClick={() => notes.markRead(n.id)} className="cursor-pointer font-medium text-slate-600 underline hover:text-ink">
                       Marcar como leída
                     </button>
                   )}

@@ -72,7 +72,7 @@ export function ResetForm() {
       <AuthShell title="Enlace no válido" subtitle="Este enlace venció o ya se utilizó." backHref="/login" backLabel="← Volver a iniciar sesión">
         <Link
           href="/recuperar"
-          className="block rounded-md bg-accent px-4 py-3 text-center font-semibold text-navy transition-colors hover:bg-accent-hover"
+          className="block rounded-lg bg-ink px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-ink-hover"
         >
           Solicitar un enlace nuevo
         </Link>

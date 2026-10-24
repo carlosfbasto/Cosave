@@ -53,13 +53,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <div className="flex flex-col gap-3">
           <Link
             href={hasNext ? next : "/home"}
-            className="rounded-md bg-accent px-4 py-3 text-center font-semibold text-navy transition-colors hover:bg-accent-hover"
+            className="rounded-lg bg-ink px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-ink-hover"
           >
             Continuar
           </Link>
           <Link
             href={session ? `/profile/${session.user.id}` : demo ? `/profile/${demo.id}` : "/perfil"}
-            className="rounded-md border border-navy px-4 py-3 text-center font-semibold text-navy transition-colors hover:bg-navy hover:text-white"
+            className="rounded-lg border border-slate-300 px-4 py-3 text-center font-semibold text-ink transition-colors hover:border-slate-400 hover:bg-slate-50"
           >
             Ir a mi perfil
           </Link>
@@ -160,7 +160,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <TextField id="confirm" label="Confirmar contraseña" type="password" autoComplete="new-password" placeholder="Repite tu contraseña" error={errors.confirm} />
         )}
         {!isRegister && (
-          <Link href="/recuperar" className="-mt-2 self-end text-sm text-slate-600 underline transition-colors hover:text-navy">
+          <Link href="/recuperar" className="-mt-2 self-end text-sm text-slate-600 underline transition-colors hover:text-ink">
             ¿Olvidaste tu contraseña?
           </Link>
         )}

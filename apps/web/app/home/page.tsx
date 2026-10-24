@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AuthLink } from "@/components/auth-link";
+import { HeroSearch } from "@/components/home/hero-search";
 import { ImageTile } from "@/components/home/image-tile";
 import { Section } from "@/components/home/section";
 import { PropertyGrid } from "@/components/property-card";
@@ -40,11 +41,14 @@ export default async function Home() {
     image: items.find((p) => p.city === value)?.image ?? "/img/ciudad.jpg",
     count,
   }));
+  const sorted = (key: "type" | "city") => [...new Set(items.map((p) => p[key]))].filter(Boolean).sort((a, b) => a.localeCompare(b, "es"));
+  const cities = sorted("city");
+  const types = sorted("type");
   return (
     <main className="flex-1">
-      {/* Portada: imagen de fondo (de prueba) con capa navy para legibilidad */}
+      {/* Portada: imagen de fondo (de prueba) con capa ink para legibilidad */}
       <div className="bg-slate-50 p-3 sm:p-6">
-        <section className="relative isolate mx-auto flex min-h-[28rem] max-w-6xl items-center overflow-hidden rounded-2xl sm:min-h-[34rem]">
+        <section className="relative isolate mx-auto flex min-h-[30rem] max-w-6xl items-center overflow-hidden rounded-3xl sm:min-h-[36rem]">
           <Image
             src="/hero.jpg"
             alt="Casa moderna con jardín"
@@ -53,26 +57,27 @@ export default async function Home() {
             sizes="(min-width: 1152px) 1152px, 100vw"
             className="-z-20 object-cover"
           />
-          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy/90 via-navy/70 to-navy/20" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-ink/85 via-ink/60 to-ink/10" />
 
-          <div className="flex max-w-2xl flex-col gap-5 px-6 py-12 sm:px-12">
-            <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-6xl">
-              ¿Qué estás buscando? <span className="text-accent">Encuentra tu casa ideal</span>
+          <div className="flex w-full flex-col gap-6 px-6 py-12 sm:px-12">
+            <h1 className="display-hero max-w-2xl text-white">
+              ¿Qué estás buscando? <span className="text-sky-300">Encuentra tu casa ideal</span>
             </h1>
-            <p className="max-w-xl text-base text-slate-100 sm:text-lg">
+            <p className="max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg">
               Explora casas, terrenos y departamentos en venta o renta. ¿No encuentras lo que buscas? Guarda tu búsqueda y
               te avisamos cuando aparezca la propiedad indicada.
             </p>
-            <div className="mt-2 flex flex-wrap gap-3">
+            <HeroSearch cities={cities} types={types} />
+            <div className="flex flex-wrap gap-3">
               <Link
                 href="/properties"
-                className="rounded-md bg-accent px-6 py-3 font-semibold text-navy transition-colors hover:bg-accent-hover"
+                className="btn bg-white px-5 py-2.5 text-ink hover:bg-slate-100"
               >
                 Explorar propiedades
               </Link>
               <AuthLink
                 href="/vender"
-                className="rounded-md border border-white/70 px-6 py-3 font-semibold text-white transition-colors hover:border-white hover:bg-white hover:text-navy"
+                className="btn border border-white/60 px-5 py-2.5 text-white hover:border-white hover:bg-white/10"
               >
                 Quiero vender
               </AuthLink>
@@ -120,7 +125,7 @@ export default async function Home() {
 
       <Section
         id="como-funciona"
-        tone="navy"
+        tone="ink"
         eyebrow="Paso a paso"
         title="¿Cómo funciona?"
         subtitle="Cuatro pasos sencillos. COSAVE trabaja por ti aunque no estés buscando."
@@ -128,10 +133,10 @@ export default async function Home() {
         <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s, i) => (
             <li key={s.title} className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10">
-              <span className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-accent text-lg font-bold text-navy">
+              <span className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-white/10 font-display text-lg font-bold text-sky-300 ring-1 ring-inset ring-white/20">
                 {i + 1}
               </span>
-              <h3 className="mb-2 text-lg font-bold">{s.title}</h3>
+              <h3 className="headline-sm mb-2">{s.title}</h3>
               <p className="text-sm text-slate-300">{s.text}</p>
             </li>
           ))}
@@ -156,23 +161,23 @@ export default async function Home() {
       >
         <dl className="mb-12 grid grid-cols-2 gap-6 lg:grid-cols-4">
           {trustStats.map((s) => (
-            <div key={s.label} className="rounded-xl bg-white p-6 text-center shadow-sm">
-              <dd className="text-3xl font-bold text-navy sm:text-4xl">{s.value}</dd>
+            <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-6 text-center">
+              <dd className="font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">{s.value}</dd>
               <dt className="mt-1 text-sm text-slate-600">{s.label}</dt>
             </div>
           ))}
         </dl>
         <div className="grid gap-6 md:grid-cols-3">
           {testimonials.map((t) => (
-            <figure key={t.name} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-lg">
-              <span className="text-4xl leading-none text-accent" aria-hidden>“</span>
+            <figure key={t.name} className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-6 transition-[border-color,box-shadow] hover:border-slate-300 hover:shadow-glow">
+              <span className="font-display text-4xl leading-none text-azure" aria-hidden>“</span>
               <blockquote className="text-slate-700">{t.text}</blockquote>
               <figcaption className="mt-auto flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-full bg-navy text-sm font-bold text-white">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-ink text-sm font-bold text-white">
                   {t.name.split(" ").map((w) => w[0]).join("")}
                 </span>
                 <span className="text-sm">
-                  <strong className="block text-navy">{t.name}</strong>
+                  <strong className="block text-ink">{t.name}</strong>
                   <span className="text-slate-500">{t.role}</span>
                 </span>
               </figcaption>

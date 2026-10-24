@@ -16,7 +16,7 @@ export function WantItButton({ code, title }: { code: string; title: string }) {
   const [open, setOpen] = useState(false);
   const authed = !!id;
   const cls =
-    "cursor-pointer rounded-md bg-accent px-5 py-2 text-[0.9rem] font-semibold text-navy transition-colors hover:bg-accent-hover";
+    "cursor-pointer rounded-lg bg-azure px-5 py-2 text-[0.9rem] font-semibold text-white transition-colors hover:bg-azure-hover";
   return (
     <>
       <button

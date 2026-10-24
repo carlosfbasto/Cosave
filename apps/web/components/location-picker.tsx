@@ -58,5 +58,5 @@ export function LocationPicker({ value, onChange }: { value: LatLng | null; onCh
     else marker.current = L.marker(value, { icon: pin, keyboard: false }).addTo(m);
   }, [value]);
 
-  return <div ref={el} className="z-0 h-72 w-full overflow-hidden rounded-md border border-slate-300" />;
+  return <div ref={el} className="z-0 h-72 w-full overflow-hidden rounded-lg border border-slate-300" />;
 }

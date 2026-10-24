@@ -89,7 +89,7 @@ export function PhotoCropper({ file, onSave, onCancel }: { file: File; onSave: (
           onWheel={(e) => changeZoom(zoom - e.deltaY / 500)}
           onKeyDown={onKeyDown}
           style={{ width: VIEW, height: VIEW, touchAction: "none" }}
-          className="relative cursor-grab select-none overflow-hidden rounded-lg bg-slate-200 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="relative cursor-grab select-none overflow-hidden rounded-lg bg-slate-200 active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure"
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob) */}
           <img
@@ -106,14 +106,14 @@ export function PhotoCropper({ file, onSave, onCancel }: { file: File; onSave: (
             }
           />
           {/* Máscara: oscurece lo que queda fuera del círculo */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-white" style={{ boxShadow: "0 0 0 999px rgba(16,38,74,0.55)" }} />
+          <div aria-hidden className="pointer-events-none absolute inset-0 rounded-full ring-2 ring-white" style={{ boxShadow: "0 0 0 999px rgba(15,23,42,0.55)" }} />
         </div>
         {failed ? (
           <p role="alert" className="text-sm text-red-600">No se pudo leer esa imagen. Elige otra.</p>
         ) : (
           <label className="flex w-full items-center gap-3 text-xs font-medium text-slate-600">
             Zoom
-            <input type="range" min={1} max={MAX_ZOOM} step={0.01} value={zoom} onChange={(e) => changeZoom(Number(e.target.value))} aria-label="Zoom" className="flex-1 accent-[#f5b800]" />
+            <input type="range" min={1} max={MAX_ZOOM} step={0.01} value={zoom} onChange={(e) => changeZoom(Number(e.target.value))} aria-label="Zoom" className="flex-1 accent-azure" />
           </label>
         )}
       </div>

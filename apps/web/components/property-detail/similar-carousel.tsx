@@ -5,7 +5,7 @@ import { PropertyCard } from "@/components/property-card";
 import type { MockProperty } from "@/lib/mock-data";
 
 const nav =
-  "absolute top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white text-navy shadow-lg transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
+  "absolute top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white text-ink shadow-glow ring-1 ring-slate-200 transition-colors hover:text-azure focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure";
 
 /** Carrusel con 3 cards a la vez (2 en tablet, 1 en móvil) y avance automático (se pausa al pasar el mouse) y botones manuales. */
 export function SimilarCarousel({ items }: { items: MockProperty[] }) {

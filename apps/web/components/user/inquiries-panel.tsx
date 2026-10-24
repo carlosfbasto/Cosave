@@ -11,7 +11,7 @@ interface Row extends Omit<ReceivedInquiry, "property"> {
   property: { publicCode: string };
 }
 
-const link = "font-semibold text-navy underline transition-colors hover:text-accent-hover";
+const link = "font-semibold text-ink underline transition-colors hover:text-azure-hover";
 
 /** Consultas recibidas en una propiedad: datos de contacto compartidos y respuesta por correo, teléfono o WhatsApp. */
 export function InquiriesPanel({ code }: { code: string }) {
@@ -40,7 +40,7 @@ export function InquiriesPanel({ code }: { code: string }) {
 
   return (
     <div className="border-t border-slate-100 bg-slate-50 p-5">
-      <h3 className="mb-3 text-sm font-bold text-navy">Consultas recibidas</h3>
+      <h3 className="mb-3 text-sm font-bold text-ink">Consultas recibidas</h3>
       {error ? (
         <p role="alert" className="text-sm text-red-600">No se pudieron cargar las consultas.</p>
       ) : !rows ? (
@@ -54,8 +54,8 @@ export function InquiriesPanel({ code }: { code: string }) {
             return (
               <li key={r.id} className="rounded-lg border border-slate-200 bg-white p-4 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-semibold text-navy">{r.contactName}</p>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${r.status === "answered" ? "bg-emerald-100 text-emerald-800" : "bg-accent/30 text-navy"}`}>
+                  <p className="font-semibold text-ink">{r.contactName}</p>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${r.status === "answered" ? "bg-emerald-100 text-emerald-800" : "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200"}`}>
                     {INQUIRY_STATUS_LABEL[r.status]}
                   </span>
                 </div>
@@ -66,7 +66,7 @@ export function InquiriesPanel({ code }: { code: string }) {
                   <a href={`tel:+${phone}`} className={link}>Llamar {r.contactPhone}</a>
                   <a href={`https://wa.me/${phone}`} target="_blank" rel="noreferrer" className={link}>WhatsApp</a>
                   {r.status === "pending" && (
-                    <button type="button" onClick={() => void markAnswered(r.id)} className="cursor-pointer font-semibold text-slate-600 underline hover:text-navy">
+                    <button type="button" onClick={() => void markAnswered(r.id)} className="cursor-pointer font-semibold text-slate-600 underline hover:text-ink">
                       Marcar como respondida
                     </button>
                   )}

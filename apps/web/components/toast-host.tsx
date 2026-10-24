@@ -11,11 +11,11 @@ export function ToastHost() {
         <p
           key={toast.id}
           role="status"
-          className={`rounded-lg px-5 py-3 text-sm font-semibold shadow-lg ${
-            toast.tone === "success" ? "bg-navy text-white" : "bg-white text-navy ring-1 ring-slate-200"
+          className={`rounded-lg px-5 py-3 text-sm font-semibold shadow-veil ${
+            toast.tone === "success" ? "bg-ink text-white" : "bg-white text-ink ring-1 ring-slate-200"
           }`}
         >
-          {toast.tone === "success" && <span className="mr-2 text-accent">✓</span>}
+          {toast.tone === "success" && <span className="mr-2 text-azure">✓</span>}
           {toast.message}
         </p>
       )}

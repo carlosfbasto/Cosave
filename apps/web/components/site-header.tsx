@@ -13,10 +13,10 @@ import { signOutAll, useSession } from "@/lib/auth";
 import { useDemoUser } from "@/lib/demo-session";
 import { useProfile } from "@/lib/use-profile";
 
-const base = "rounded-md px-3 py-2 text-sm font-medium transition-colors";
-const idle = "text-white/85 hover:bg-white/15 hover:text-white";
-const icon = "grid h-9 w-9 place-items-center rounded-full text-white/85 transition-colors hover:bg-white/15 hover:text-white";
-const current = "bg-accent text-navy hover:bg-accent-hover";
+const base = "rounded-lg px-3 py-2 text-sm font-medium transition-colors";
+const idle = "text-slate-600 hover:bg-slate-100 hover:text-ink";
+const icon = "grid h-9 w-9 place-items-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink";
+const current = "bg-sky-50 text-azure hover:bg-sky-100";
 
 /** Nombre para mostrar de una sesión de Supabase: nombre completo o, si no hay, el correo. */
 function sessionName(session: Session | null) {
@@ -67,8 +67,8 @@ function Nav() {
 
   return (
     <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-2 px-4 py-3">
-      <Link href="/home" className="mr-4 text-xl font-bold tracking-wide text-white">
-        COSA<span className="text-accent">VE</span>
+      <Link href="/home" className="mr-2 font-display text-xl font-bold tracking-tight text-ink">
+        COSA<span className="text-azure">VE</span>
       </Link>
 
       <Link href="/home" aria-current={pathname === "/home" ? "page" : undefined} className={cls(pathname === "/home")}>
@@ -141,7 +141,7 @@ function Nav() {
 
 export function SiteHeader() {
   return (
-    <header className="bg-navy shadow-md">
+    <header className="border-b border-slate-200 bg-white">
       <Suspense>
         <Nav />
       </Suspense>

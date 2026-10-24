@@ -13,7 +13,7 @@ export function UserAvatar({ userId, name, fallbackSrc, size = 36 }: { userId: s
     );
   }
   return (
-    <span className="grid shrink-0 place-items-center rounded-full bg-accent font-bold text-navy" style={{ width: size, height: size }}>
+    <span className="grid shrink-0 place-items-center rounded-full bg-azure font-bold text-white" style={{ width: size, height: size }}>
       {(name.trim().charAt(0) || "?").toUpperCase()}
     </span>
   );

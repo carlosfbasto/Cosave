@@ -8,10 +8,10 @@ const cols = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-navy text-slate-300">
+    <footer className="bg-ink text-slate-300">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="text-2xl font-bold text-white">COSA<span className="text-accent">VE</span></p>
+          <p className="font-display text-2xl font-bold tracking-tight text-white">COSA<span className="text-sky-400">VE</span></p>
           <p className="mt-3 max-w-xs text-sm">
             Encuentra tu propiedad ideal. Si no está todavía, guarda tu búsqueda y te avisamos.
           </p>
@@ -20,11 +20,11 @@ export function SiteFooter() {
         </div>
         {cols.map((c) => (
           <nav key={c.title} aria-label={c.title}>
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-widest text-white">{c.title}</h3>
+            <h3 className="label-sm mb-4 text-white">{c.title}</h3>
             <ul className="space-y-2 text-sm">
               {c.links.map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="transition-colors hover:text-accent">{label}</Link>
+                  <Link href={href} className="transition-colors hover:text-white">{label}</Link>
                 </li>
               ))}
             </ul>

@@ -7,15 +7,15 @@ export function Advertiser({ user, listed, name, memberSince }: { user?: MockUse
   const display = user?.fullName ?? name ?? "COSAVE";
   const initials = display.split(" ").slice(0, 2).map((w) => w[0]).join("");
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-bold text-navy">Anunciante</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <h2 className="headline-sm mb-4 text-ink">Anunciante</h2>
       <div className="flex items-center gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-navy text-lg font-bold text-white">{initials}</span>
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-ink text-lg font-bold text-white">{initials}</span>
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-navy">{display}</p>
+          <p className="font-bold text-ink">{display}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             {user ? <RoleBadge role={user.role} /> : name ? null : <span className="text-xs text-slate-500">Publicación de la plataforma</span>}
-            {user?.verified && <span className="text-xs font-semibold text-emerald-700">✓ Verificado</span>}
+            {user?.verified && <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-azure">✓ Verificado</span>}
           </div>
           {!user && memberSince && <p className="mt-1 text-sm text-slate-600">Miembro desde {formatDate(memberSince.slice(0, 10))}</p>}
           {user && (
@@ -26,7 +26,7 @@ export function Advertiser({ user, listed, name, memberSince }: { user?: MockUse
           )}
         </div>
         {user && (
-          <Link href={`/profile/${user.id}`} className="shrink-0 text-sm font-semibold text-navy underline transition-colors hover:text-accent-hover">
+          <Link href={`/profile/${user.id}`} className="shrink-0 text-sm font-semibold text-ink underline transition-colors hover:text-azure-hover">
             Ver perfil
           </Link>
         )}

@@ -26,7 +26,7 @@ export function ShareButton({ code, title }: { code: string; title: string }) {
     <button
       type="button"
       onClick={share}
-      className="flex cursor-pointer items-center gap-2 rounded-md border border-navy px-4 py-2 text-[0.9rem] font-semibold text-navy transition-colors hover:bg-navy hover:text-white"
+      className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-[0.9rem] font-semibold text-ink transition-colors hover:border-slate-400 hover:bg-slate-50"
     >
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <circle cx="18" cy="5" r="2.5" />

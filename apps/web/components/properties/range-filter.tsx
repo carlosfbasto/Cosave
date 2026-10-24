@@ -7,16 +7,16 @@ export interface Range {
   max?: number;
 }
 
-export const categoryCls = "text-[0.9rem] font-medium text-navy";
-export const subCls = "text-[0.8rem] text-[#666]";
+export const categoryCls = "text-[0.9rem] font-medium text-ink";
+export const subCls = "text-[0.8rem] text-slate-500";
 
 const inputCls =
-  "w-full min-w-0 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-[0.8rem] text-[#444] transition-colors placeholder:text-[#666] hover:border-navy-light focus:border-navy focus:outline-none";
+  "w-full min-w-0 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[0.8rem] text-slate-700 transition-colors placeholder:text-slate-400 hover:border-slate-400 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15";
 
 const toNum = (v: string) => (v.trim() === "" || Number.isNaN(Number(v)) ? undefined : Number(v));
 
 const stepBtn =
-  "grid h-4 w-5 place-items-center rounded-sm text-[#666] transition-colors hover:bg-navy hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-navy";
+  "grid h-4 w-5 place-items-center rounded-sm text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-azure";
 
 /** Input numérico con botones de aumentar / disminuir dentro del campo. */
 function NumberInput({ value, onChange, step, label, placeholder }: { value: string; onChange: (v: string) => void; step: number; label: string; placeholder: string }) {
@@ -85,7 +85,7 @@ export function RangeFilter({
       <button
         type="button"
         onClick={() => onApply({ min: toNum(min), max: toNum(max) }, currency ? cur : undefined)}
-        className="w-full rounded-md bg-navy px-3 py-1.5 text-[0.8rem] font-semibold text-white transition-colors hover:bg-accent hover:text-navy"
+        className="w-full rounded-lg bg-ink px-3 py-1.5 text-[0.8rem] font-semibold text-white transition-colors hover:bg-ink-hover"
       >
         Aplicar
       </button>

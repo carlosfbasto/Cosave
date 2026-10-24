@@ -18,7 +18,7 @@ import {
 } from "./contact-utils";
 
 const inputBase =
-  "w-full rounded-md border bg-white py-2 pl-3 pr-10 text-sm transition-colors placeholder:text-slate-400 focus:border-navy focus:outline-none";
+  "w-full rounded-lg border bg-white py-2 pl-3 pr-10 text-sm transition-colors placeholder:text-slate-400 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15";
 
 /**
  * Campo con datos del perfil: gris mientras está guardado, negro mientras se edita.
@@ -79,7 +79,7 @@ function ProfileField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-[0.9rem] font-medium text-navy">{label}</label>
+      <label htmlFor={id} className="mb-1 block text-[0.9rem] font-medium text-ink">{label}</label>
       <div className="flex gap-2">
         {region !== undefined && (
           <select
@@ -87,7 +87,7 @@ function ProfileField({
             value={editing ? draftRegion : region}
             disabled={!editing}
             onChange={(e) => setDraftRegion(e.target.value)}
-            className={`w-[4.5rem] shrink-0 rounded-md border border-slate-300 bg-white px-1.5 py-2 text-sm focus:border-navy focus:outline-none disabled:appearance-none disabled:text-slate-500 ${editing ? "cursor-pointer text-slate-900" : "cursor-default"}`}
+            className={`w-[4.5rem] shrink-0 rounded-lg border border-slate-300 bg-white px-1.5 py-2 text-sm focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15 disabled:appearance-none disabled:text-slate-500 ${editing ? "cursor-pointer text-slate-900" : "cursor-default"}`}
           >
             {regions.map((r) => (
               <option key={r.code} value={r.code}>{r.code}</option>
@@ -121,7 +121,7 @@ function ProfileField({
               onClick={confirm}
               aria-label={`Guardar ${label.toLowerCase()}`}
               title="Guardar cambios"
-              className="absolute right-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-md text-green-600 transition-colors hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600"
+              className="absolute right-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-green-600 transition-colors hover:bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
                 <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -133,7 +133,7 @@ function ProfileField({
               onClick={open}
               aria-label={`Editar ${label.toLowerCase()}`}
               title={`Editar ${label.toLowerCase()}`}
-              className="absolute right-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-md text-navy-light transition-colors hover:bg-accent hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="absolute right-1.5 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-lg text-slate-500 transition-colors hover:bg-azure hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                 <path d="M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16v4zM13.5 6.5l4 4" strokeLinecap="round" strokeLinejoin="round" />
@@ -202,8 +202,8 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
 
   const header = (
     <div className="border-b border-slate-100 pb-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-navy-light">Contactar al anunciante</p>
-      <h2 id="contact-modal-title" className="mt-1 text-lg font-bold leading-snug text-navy">{title}</h2>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contactar al anunciante</p>
+      <h2 id="contact-modal-title" className="mt-1 text-lg font-bold leading-snug text-ink">{title}</h2>
       <p className="text-xs text-slate-500">Código {code}</p>
     </div>
   );
@@ -213,15 +213,15 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
       <div className="space-y-5 p-6">
         {header}
         <div role={unavailable ? "alert" : "status"} className="flex flex-col items-center gap-3 py-4 text-center">
-          {!unavailable && <span className="grid h-14 w-14 place-items-center rounded-full bg-accent text-2xl font-bold text-navy">✓</span>}
-          <p className="font-bold text-navy">{unavailable ? "Esta publicación ya no está disponible" : "¡Consulta enviada!"}</p>
+          {!unavailable && <span className="grid h-14 w-14 place-items-center rounded-full bg-azure text-2xl font-bold text-white">✓</span>}
+          <p className="font-bold text-ink">{unavailable ? "Esta publicación ya no está disponible" : "¡Consulta enviada!"}</p>
           <p className="text-sm text-slate-600">
             {unavailable
               ? `No es posible enviar nuevas consultas sobre “${title}”.`
               : "El anunciante podrá ver tu consulta. Aparecerá como pendiente hasta que responda."}
           </p>
         </div>
-        <button type="button" onClick={onClose} className="w-full cursor-pointer rounded-md bg-accent px-4 py-2.5 font-semibold text-navy transition-colors hover:bg-accent-hover">
+        <button type="button" onClick={onClose} className="w-full cursor-pointer rounded-lg bg-ink px-4 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
           Cerrar
         </button>
       </div>
@@ -257,7 +257,7 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
             onEditing={onEditing}
           />
           <div>
-            <label htmlFor="cm-msg" className="mb-1 block text-[0.9rem] font-medium text-navy">Mensaje</label>
+            <label htmlFor="cm-msg" className="mb-1 block text-[0.9rem] font-medium text-ink">Mensaje</label>
             <textarea
               id="cm-msg"
               rows={4}
@@ -267,7 +267,7 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
               onChange={(e) => setMessage(e.target.value)}
               aria-invalid={!!messageError}
               aria-describedby={messageError ? "err-cm-msg" : undefined}
-              className={`w-full resize-none rounded-md border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-navy focus:outline-none ${messageError ? "border-red-500" : "border-slate-300"}`}
+              className={`w-full resize-none rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15 ${messageError ? "border-red-500" : "border-slate-300"}`}
             />
             <div className="flex justify-between">
               <span>{messageError && <p id="err-cm-msg" role="alert" className="mt-1 text-xs text-red-600">{messageError}</p>}</span>
@@ -277,13 +277,13 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
           <p className="text-xs text-slate-500">Solo compartimos con el anunciante de esta propiedad los datos que ves aquí, para responder tu consulta.</p>
           {formError && <p role="alert" className="text-sm text-red-600">{formError}</p>}
           <div className="flex justify-end gap-3 pt-1">
-            <button type="button" onClick={onClose} className="cursor-pointer rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100">
+            <button type="button" onClick={onClose} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100">
               Cancelar
             </button>
             <button
               type="submit"
               disabled={sending}
-              className="cursor-pointer rounded-md bg-accent px-5 py-2 text-sm font-semibold text-navy transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className="cursor-pointer rounded-lg bg-azure px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-azure-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {sending ? "Enviando…" : "Enviar consulta"}
             </button>
@@ -310,7 +310,7 @@ export function ContactModal({ open, code, title, onClose }: { open: boolean; co
       onClose={onClose}
       onClick={(e) => e.target === e.currentTarget && onClose()}
       aria-labelledby="contact-modal-title"
-      className="m-auto max-h-[92vh] w-[min(94vw,28rem)] overflow-x-hidden rounded-xl p-0 shadow-2xl backdrop:bg-navy/50"
+      className="m-auto max-h-[92vh] w-[min(94vw,28rem)] overflow-x-hidden rounded-xl p-0 shadow-veil backdrop:bg-ink/40 backdrop:backdrop-blur-sm"
     >
       {open && <ModalBody code={code} title={title} onClose={onClose} />}
     </dialog>
