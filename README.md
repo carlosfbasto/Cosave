@@ -96,7 +96,7 @@ cp .env.example apps/api/.env        # completa los valores; igual para apps/web
 pnpm dev                              # web http://localhost:5300 · api http://localhost:3300/health
 ```
 
-Otros comandos: `pnpm build`, `pnpm lint`, `pnpm typecheck`. Aplicar la BD: `pnpm --filter @cosave/api db:migrate` (con `DATABASE_URL` configurada). Primer admin: ver `docs/CONTRIBUTING.md`.
+Otros comandos: `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (pruebas del api con Vitest; no usan la BD real). Aplicar la BD: `pnpm --filter @cosave/api db:migrate` (con `DATABASE_URL` configurada). Primer admin: ver `docs/CONTRIBUTING.md`.
 
 ---
 
