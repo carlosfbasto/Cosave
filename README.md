@@ -152,11 +152,11 @@ Contrastado con el *Documento Técnico-Funcional y Modelo de Negocio* (secciones
 | Etapa | Qué se hace | Estado |
 |---|---|---|
 | **Fase 0** | Arquitectura, planos, stack | ✅ Completa |
-| **Etapa 1** | Base de datos, usuarios, roles, admin | 🔄 Código listo; falta aplicar migración y probar con Supabase. Falta: registro de acciones importantes (auditoría) y respaldos |
-| **Etapa 2** | Publicar propiedades, fotos, revisión | 🔄 Código listo (publicar, fotos, revisión, Mis propiedades, panel admin, estados, aviso de duplicados); falta aplicar migraciones, crear el bucket y probar con Supabase. Falta: videos / recorridos virtuales, tipos *local, oficina, bodega, rancho* y amenidades |
+| **Etapa 1** | Base de datos, usuarios, roles, admin | 🔄 Migraciones aplicadas en Supabase; usuarios, roles y panel admin funcionando. Falta: registro de acciones importantes (auditoría) y respaldos |
+| **Etapa 2** | Publicar propiedades, fotos, revisión | 🔄 Publicar, fotos, revisión, Mis propiedades, panel admin, estados y aviso de duplicados; bucket `property-images` creado. Falta: probar la subida de fotos de punta a punta, videos / recorridos virtuales, tipos *local, oficina, bodega, rancho* y amenidades |
 | **Etapa 3** | Buscador, filtros, resultados, mapa | 🔄 Listado, ficha, portada y mapa leen del api; falta paginar/filtrar en el servidor (hoy el catálogo carga hasta 500), filtrar por zona/estado/características y por el área visible del mapa |
-| **Etapa 4** | Favoritos, comparador, contacto | 🔄 Favoritos y consultas hechos (falta aplicar migración). **Falta el comparador** |
-| **Etapa 5** | "No encontré lo que busco", asesores, "Quiero vender" | 🔄 Búsquedas guardadas hechas ("Guardar mi búsqueda" cuando no hay resultados y "Mis búsquedas guardadas" en el perfil). Tablas ya modeladas (`SearchMatch`, `SellerRequest`, `Professional`, `Notification`); faltan: matching de búsquedas guardadas, perfil y alta de asesor (con revisión COSAVE), directorio de asesores (el cliente elige), solicitudes de venta/servicios, leads para asesores, avisos por email (Resend) |
+| **Etapa 4** | Favoritos, comparador, contacto | 🔄 Favoritos y consultas funcionando. **Falta el comparador** |
+| **Etapa 5** | "No encontré lo que busco", asesores, "Quiero vender" | 🔄 Búsquedas guardadas y **coincidencias**: al aprobar una propiedad se avisa en la app (campana) a quien tenga una búsqueda que coincida. Faltan: perfil y alta de asesor (con revisión COSAVE), directorio de asesores (el cliente elige), solicitudes de venta/servicios, leads para asesores, avisos por email (Resend) |
 | **Etapa 6** | Pruebas, seguridad, lanzamiento | ⏳ Pruebas automáticas, permisos de documentos, respaldos, auditoría, correcciones y lanzamiento |
 
 ### Después del MVP (modelo de negocio)
@@ -170,17 +170,8 @@ Contrastado con el *Documento Técnico-Funcional y Modelo de Negocio* (secciones
 ### Hecho vs. pendiente respecto al documento
 
 - **Cubierto:** usuarios y roles (comprador, vendedor, asesor, admin), propiedades con ubicación/características/fotos, ID `COS-000001`, flujo de publicación con revisión y estados, favoritos, contacto, mapa, panel admin (usuarios, propiedades, solicitudes), arquitectura API-first.
-- **Brecha principal del MVP:** la función estratégica *"Estoy buscando una propiedad / No encontré lo que busco"* y el flujo de asesores (Etapa 5), más el comparador (Etapa 4).
+- **Brecha principal del MVP:** el flujo de asesores y los avisos por email (Etapa 5), más el comparador (Etapa 4). *"No encontré lo que busco"* ya avisa dentro de la app.
 - **Brechas de modelo de datos:** `PROPERTY_SOURCES`, `PROPERTY_VERIFICATION`, `PROFESSIONAL_SERVICES/AREAS`, `LEADS/LEAD_ASSIGNMENTS`, `SOURCES`, `IMPORT_LOGS`, y operación de estado comercial "apartada".
-
----|---|---|
-| **Fase 0** | Arquitectura, planos, stack | ✅ Completa |
-| **Etapa 1** | Base de datos, usuarios, admin | 🔄 Código listo; falta aplicar migración y probar con Supabase |
-| **Etapa 2** | Publicar propiedades, fotos | 🔄 Código listo (publicar, fotos, revisión, Mis propiedades, panel admin); falta aplicar migraciones, crear el bucket y probar con Supabase |
-| **Etapa 3** | Buscador, filtros, resultados | 🔄 Listado, ficha, portada y mapa ya leen del api; falta paginar/filtrar en el servidor |
-| **Etapa 4** | Favoritos, comparador, contacto | 🔄 Favoritos y consultas hechos (falta aplicar migración y comparador) |
-| **Etapa 5** | Asesores, solicitudes, matching | ⏳ |
-| **Etapa 6** | Pruebas, seguridad, lanzamiento | ⏳ |
 
 ---
 

@@ -51,6 +51,8 @@ enum NotificationChannel {
   email
   whatsapp
   push
+  /// Aviso dentro de la app (campana del header).
+  in_app
 }
 
 enum NotificationStatus {
@@ -287,8 +289,11 @@ model Notification {
   matchPropertyId    String?             @db.Uuid
   createdAt          DateTime            @default(now())
   sentAt             DateTime?
+  /// Cuándo la persona la vio (solo `in_app`); null = sin leer.
+  readAt             DateTime?
 
   user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status, channel])
+  @@index([userId, channel, createdAt])
 }

@@ -34,13 +34,14 @@ erDiagram
 | **SavedSearch** | "No encontré lo que busco": criterios estructurados + canales de aviso (USER_REQUESTS del README). |
 | **SearchMatch** | Coincidencia búsqueda ↔ propiedad; `notifiedAt` evita avisos duplicados. |
 | **SellerRequest** | Vendedor pide publicar solo, buscar asesor o contratar servicios. |
-| **Notification** | Aviso por email / WhatsApp / push con su estado de envío. |
+| **Notification** | Aviso por email / WhatsApp / push con su estado de envío, o dentro de la app (`in_app`, campana del header) con `readAt` para saber si ya se leyó. |
 
 ## Índices clave
 - `Property(status, operation, type, price)` — listado y filtros.
 - `PropertyLocation(state, city)` — búsqueda por ubicación.
 - `Inquiry(senderId, createdAt)` y `Inquiry(propertyId, createdAt)` — bandeja del remitente y del anunciante.
 - `SavedSearch(active, operation, propertyType, city)` — matching al publicar.
+- `Notification(userId, channel, createdAt)` — campana: avisos de una persona, más recientes primero.
 
 ## Notas
 - Dinero en `Decimal(14,2)`, moneda por propiedad (`MXN` por defecto).
@@ -53,4 +54,6 @@ erDiagram
 - `Favorite` tiene clave `(userId, propertyId)`: guardar dos veces no duplica.
 - Los datos de contacto de `Inquiry` se copian del formulario (lo que la persona decidió compartir), no del perfil.
 - Migración `20261009000000_favoritos_consultas`. Propiedades de ejemplo: `pnpm --filter @cosave/api db:seed`.
+- **Coincidencias de búsquedas guardadas:** al aprobar una propiedad (`published`), el api la compara con las `SavedSearch` activas (`apps/api/src/lib/search-matching.ts`). Operación obligatoria; tipo, estado, municipio y zona solo si la búsqueda los pide (sin distinguir mayúsculas ni acentos); precio exacto, sin margen; recámaras y baños como mínimos. Por cada coincidencia nueva crea un `SearchMatch` (con `notifiedAt`) y una `Notification` `in_app`. Nunca avisa al dueño de la propiedad ni dos veces por la misma búsqueda y propiedad.
+- Migración `20261025000000_notificaciones_in_app`: valor `in_app` en `NotificationChannel`, columna `Notification.readAt` e índice de la campana.
 - `publicCode` (COS-000001) sale de la secuencia `property_code_seq`, que arranca en 1000 para no chocar con las 14 de ejemplo.

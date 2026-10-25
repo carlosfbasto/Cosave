@@ -26,7 +26,7 @@ Respuestas exitosas: `{ "data": ..., "meta": ... }`. Error de validación: 422 c
 | 2 ✅ | `POST /me/properties/:id/submit` | Envía a revisión; valida lo obligatorio y exige ≥1 foto (422 `incomplete`). Con coincidencias responde 409 `possible_duplicate` + `details.codes`; se reenvía con `{ confirmDuplicate: true }`. Nunca borra nada |
 | 2 ✅ | `POST /me/properties/:id/status` | `{ to }`: pausar, reactivar, `sold`/`rented`, `archived`, `draft`. Solo transiciones válidas (409 `invalid_transition`) |
 | 2 ✅ | `POST /me/properties/:id/images` · `DELETE …/images/:imageId` · `PATCH …/images/:imageId/cover` | Fotos: el cuerpo es el archivo (una por petición), JPG/PNG/WebP detectado por contenido, 8 MB, máx. 10 |
-| 2 ✅ | `GET /admin/properties?status=pending` · `POST /admin/properties/:id/review` | Cola de revisión; `{ decision: "approve"\|"reject", note }` (el motivo es obligatorio al rechazar) y avisa al dueño |
+| 2 ✅ | `GET /admin/properties?status=pending` · `POST /admin/properties/:id/review` | Cola de revisión; `{ decision: "approve"|"reject", note }` (el motivo es obligatorio al rechazar) y avisa al dueño. Al aprobar, avisa en la app a quien tenga una búsqueda guardada que coincida |\|"reject", note }` (el motivo es obligatorio al rechazar) y avisa al dueño |
 | 2 ✅ | `PATCH /inquiries/:id` | El anunciante marca una consulta recibida como `answered` |
 | 3 ✅ (básico) | `GET /properties` | **Público.** Solo `published`; filtros `operation, type, city, minPrice, maxPrice`, paginación |
 | 3 ✅ | `GET /properties/catalog` | **Público.** Todo lo publicado (máx. 500), con fotos y coordenadas; la web filtra y cuenta |
@@ -38,4 +38,6 @@ Respuestas exitosas: `{ "data": ..., "meta": ... }`. Error de validación: 422 c
 | 4 ✅ | `GET /inquiries/received` | Consultas recibidas en mis propiedades (con los datos de contacto compartidos) |
 | 5 ✅ | `GET /saved-searches` | Mis búsquedas guardadas activas (más recientes primero). Requiere cuenta |
 | 5 ✅ | `POST /saved-searches` · `DELETE /saved-searches/:id` | Guardar criterios `{ operation, propertyType?, state?, city?, minPrice?, maxPrice? }` (201) / eliminar una búsqueda propia |
+| 5 ✅ | `GET /notifications?limit` | Mis avisos `in_app` (coincidencias de búsquedas guardadas), más recientes primero, con `propertyCode`; `meta.unread` = sin leer. Requiere cuenta |
+| 5 ✅ | `PATCH /notifications/:id/read` · `POST /notifications/read-all` · `DELETE /notifications/:id` | Marcar uno o todos como leídos (204) / eliminar uno propio (204; 404 si no es tuyo) |
 | 5 | `GET /professionals` · `POST /seller-requests` | Asesores y solicitudes |

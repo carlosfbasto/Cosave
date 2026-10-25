@@ -6,6 +6,7 @@ import { handler, HttpError } from "../lib/errors.js";
 import { moveStatus } from "../lib/property-service.js";
 import { ownerView, propertyInclude } from "../lib/property-view.js";
 import { prisma } from "../lib/prisma.js";
+import { notifySavedSearchMatches } from "../lib/search-matching.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 export const adminRouter = Router();
@@ -136,6 +137,8 @@ adminRouter.post(
       },
     });
     const fresh = await prisma.property.findUniqueOrThrow({ where: { id }, include: propertyInclude });
+    // Avisar a quien guardó una búsqueda que coincide. Si falla, la aprobación ya quedó hecha.
+    if (decision === "approve") await notifySavedSearchMatches(fresh).catch((err: unknown) => console.error("Coincidencias de búsquedas guardadas:", err));
     res.json({ data: ownerView(fresh) });
   }),
 );
