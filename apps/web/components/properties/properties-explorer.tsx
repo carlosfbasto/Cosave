@@ -178,7 +178,7 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
               {open ? "Ocultar filtros" : "Mostrar filtros"}
             </button>
             {/* En móvil los filtros se abren como panel lateral sobre la lista; en escritorio son una columna fija. */}
-            <div id="filters-drawer" className={`${open ? "fixed inset-0 z-50 flex" : "hidden"} lg:static lg:z-auto lg:block`}>
+            <div id="filters-drawer" className={`${open ? "fixed inset-0 z-[1100] flex" : "hidden"} lg:static lg:z-auto lg:block`}>
               <button type="button" aria-label="Cerrar filtros" onClick={() => setOpen(false)} className="scrim absolute inset-0 cursor-default lg:hidden" />
               <div
                 role={open ? "dialog" : undefined}

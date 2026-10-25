@@ -8,11 +8,11 @@ const cols = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-ink text-slate-300">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <p className="font-display text-2xl font-bold tracking-tight text-white">COSA<span className="text-sky-400">VE</span></p>
-          <p className="mt-3 max-w-xs text-sm">
+    <footer className="border-t border-slate-200 bg-white text-slate-600">
+      <div className="mx-auto grid max-w-[1440px] gap-10 px-4 py-14 sm:grid-cols-2 md:px-8 lg:grid-cols-5">
+        <div className="lg:col-span-2">
+          <p className="font-display text-2xl font-bold tracking-tight text-ink">COSA<span className="text-azure">VE</span></p>
+          <p className="mt-3 max-w-sm text-[0.95rem] leading-relaxed">
             Encuentra tu propiedad ideal. Si no está todavía, guarda tu búsqueda y te avisamos.
           </p>
           <p className="mt-4 text-sm">contacto@cosave.example</p>
@@ -20,18 +20,18 @@ export function SiteFooter() {
         </div>
         {cols.map((c) => (
           <nav key={c.title} aria-label={c.title}>
-            <h3 className="label-sm mb-4 text-white">{c.title}</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="label-sm mb-4 text-ink">{c.title}</h3>
+            <ul className="space-y-2.5 text-[0.95rem]">
               {c.links.map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="transition-colors hover:text-white">{label}</Link>
+                  <Link href={href} className="transition-colors hover:text-ink">{label}</Link>
                 </li>
               ))}
             </ul>
           </nav>
         ))}
       </div>
-      <div className="border-t border-white/10 py-5 text-center text-xs text-slate-400">
+      <div className="mx-auto max-w-[1440px] border-t border-slate-100 px-4 py-6 text-sm text-slate-500 md:px-8">
         © {new Date().getFullYear()} COSAVE. Todos los derechos reservados.
       </div>
     </footer>

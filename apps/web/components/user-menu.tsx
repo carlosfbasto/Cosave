@@ -36,7 +36,7 @@ export function UserMenu({
         aria-expanded={open}
         aria-label={`Menú de ${name}`}
         title={name}
-        className="cursor-pointer rounded-full transition-shadow hover:ring-2 hover:ring-azure focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure"
+        className="flex cursor-pointer items-center gap-2.5 rounded-full transition-shadow hover:ring-2 hover:ring-azure focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure xl:rounded-xl xl:py-1 xl:pl-1 xl:pr-3 xl:hover:bg-slate-50 xl:hover:ring-1 xl:hover:ring-slate-200"
       >
         {children}
       </button>

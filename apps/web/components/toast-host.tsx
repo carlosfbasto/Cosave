@@ -6,7 +6,7 @@ import { useToast } from "@/lib/toast";
 export function ToastHost() {
   const toast = useToast();
   return (
-    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-6 z-[1200] flex justify-center px-4">
       {toast && (
         <p
           key={toast.id}
