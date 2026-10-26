@@ -12,7 +12,7 @@ Lee `README.md` y `docs/ARCHITECTURE.md` antes de tocar código.
 - TypeScript estricto. Validar toda entrada externa con zod en los bordes (rutas del api).
 - Tipos y enums compartidos van en `packages/shared`, no se duplican.
 - Auth con Supabase Auth: el api solo verifica el JWT (`apps/api/src/middleware/auth.ts`).
-- Cambios de BD solo vía migraciones Prisma; documentar en `docs/DATABASE.md`.
+- Cambios de BD solo vía migraciones Prisma; documentar en `docs/DATABASE.md`. Toda tabla nueva activa RLS en su migración (`ALTER TABLE "X" ENABLE ROW LEVEL SECURITY;`): el web nunca lee tablas directo.
 - Next 16 tiene cambios respecto a versiones previas: consultar `apps/web/node_modules/next/dist/docs/` antes de escribir código de Next.
 - Diseño visual: seguir `docs/DESIGN.md`. Colores con los tokens `ink`/`azure` y la escala `slate` de Tailwind (`apps/web/app/globals.css`); botones con `btn btn-primary|btn-accent|btn-outline`. El panel admin aún usa la paleta anterior (`navy`/`accent`).
 

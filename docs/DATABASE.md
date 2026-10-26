@@ -45,6 +45,10 @@ erDiagram
 - `Notification(userId, channel, createdAt)` — campana: avisos de una persona, más recientes primero.
 - `AuditLog(entityType, entityId, createdAt)`, `AuditLog(actorId, createdAt)` y `AuditLog(createdAt)` — historial de una entidad, de una persona y lo más reciente.
 
+## Seguridad
+- **RLS activado en todas las tablas de `public`, sin políticas** (migración `20261025020000_rls_tablas_publicas`). La API REST de Supabase (llave pública `anon` / `authenticated`) no puede leer ni escribir nada; todo pasa por `apps/api`, que se conecta como `postgres` (dueño de las tablas, con `BYPASSRLS`). El aviso "RLS Enabled No Policy" del linter de Supabase es intencional.
+- **Toda tabla nueva debe activar RLS en su propia migración:** `ALTER TABLE "MiTabla" ENABLE ROW LEVEL SECURITY;` (Prisma no lo agrega solo). Comprobar después con el linter de seguridad de Supabase.
+
 ## Notas
 - Dinero en `Decimal(14,2)`, moneda por propiedad (`MXN` por defecto).
 - Borrar un perfil/propiedad elimina en cascada favoritos, búsquedas, coincidencias e imágenes.
