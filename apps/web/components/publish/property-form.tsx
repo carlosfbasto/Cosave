@@ -31,7 +31,7 @@ import { PhotosStep } from "./photos-step";
 // Leaflet necesita el navegador: se carga solo en el cliente.
 const LocationPicker = dynamic(() => import("@/components/location-picker").then((m) => m.LocationPicker), {
   ssr: false,
-  loading: () => <div className="grid h-72 place-items-center rounded-md border border-slate-300 bg-slate-100 text-sm text-slate-500">Cargando mapa…</div>,
+  loading: () => <div className="grid h-72 place-items-center rounded-lg border border-slate-300 bg-slate-100 text-sm text-slate-500">Cargando mapa…</div>,
 });
 
 const OPERATION_LABEL = { sale: "Venta", rent: "Renta" } as const;
@@ -278,7 +278,7 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
     return (
       <main className="flex flex-1 items-center justify-center bg-slate-50 px-4 py-20">
         <div className={`${card} max-w-md text-center`}>
-          <h1 className="text-2xl font-bold text-navy">{live ? "¡Tu propiedad ya está publicada!" : "¡Listo, la recibimos!"}</h1>
+          <h1 className="text-2xl font-bold text-ink">{live ? "¡Tu propiedad ya está publicada!" : "¡Listo, la recibimos!"}</h1>
           <p className="text-sm text-slate-600">
             {live
               ? `La clave de tu anuncio es ${sent.code}.`
@@ -299,12 +299,12 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
   return (
     <main className="flex-1 bg-slate-50">
       <div ref={top} className="mx-auto max-w-3xl space-y-6 px-4 py-10">
-        <button type="button" onClick={goBack} className="inline-block cursor-pointer text-sm font-semibold text-navy transition-colors hover:text-accent-hover">
+        <button type="button" onClick={goBack} className="inline-block cursor-pointer text-sm font-semibold text-ink transition-colors hover:text-azure-hover">
           ← Volver
         </button>
         <header className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-navy">{title}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-ink">{title}</h1>
             {property && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{PROPERTY_STATUS_LABEL[status]}</span>}
           </div>
           <p className="text-sm text-slate-600">
@@ -316,8 +316,8 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
         </header>
 
         {readOnly && (
-          <div role="status" className={`${card} space-y-2 border-accent/60 bg-accent/10`}>
-            <p className="font-semibold text-navy">
+          <div role="status" className={`${card} space-y-2 border-azure/60 bg-azure/10`}>
+            <p className="font-semibold text-ink">
               {status === "pending" ? "Está en revisión: no se puede editar." : `Esta propiedad está ${PROPERTY_STATUS_LABEL[status].toLowerCase()} y ya no se puede editar.`}
             </p>
             {status === "pending" && (
@@ -334,13 +334,13 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
             <p className="mt-1">Corrige lo indicado y vuelve a enviarla.</p>
           </div>
         )}
-        {banner && <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{banner}</p>}
+        {banner && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{banner}</p>}
 
         {/* Paso 1: datos */}
         {(step === 0 || limited || readOnly) && (
           <div className="space-y-6">
             <section className={card}>
-              <h2 className="text-lg font-bold text-navy">Datos generales</h2>
+              <h2 className="text-lg font-bold text-ink">Datos generales</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Operación" error={errors["operation"]}>
                   <select value={values["operation"]} disabled={locked("operation")} onChange={(e) => set("operation", e.target.value)} className={input}>
@@ -365,7 +365,7 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
             </section>
 
             <section className={card}>
-              <h2 className="text-lg font-bold text-navy">Ubicación</h2>
+              <h2 className="text-lg font-bold text-ink">Ubicación</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Estado" error={errors["state"]}><input value={values["state"]} disabled={locked("state")} onChange={(e) => set("state", e.target.value)} className={input} /></Field>
                 <Field label="Ciudad" error={errors["city"]}><input value={values["city"]} disabled={locked("city")} onChange={(e) => set("city", e.target.value)} className={input} /></Field>
@@ -377,9 +377,9 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-navy">Ubicación en el mapa (opcional)</p>
+                  <p className="text-sm font-medium text-ink">Ubicación en el mapa (opcional)</p>
                   {point && !locked("latitude") && (
-                    <button type="button" onClick={() => { setPoint(null); setDirty(true); }} className="cursor-pointer text-xs font-semibold text-navy underline">Quitar marca</button>
+                    <button type="button" onClick={() => { setPoint(null); setDirty(true); }} className="cursor-pointer text-xs font-semibold text-ink underline">Quitar marca</button>
                   )}
                 </div>
                 {locked("latitude") ? (
@@ -394,7 +394,7 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
             </section>
 
             <section className={card}>
-              <h2 className="text-lg font-bold text-navy">Características (opcional)</h2>
+              <h2 className="text-lg font-bold text-ink">Características (opcional)</h2>
               <div className="grid gap-4 sm:grid-cols-3">
                 {features.map((f) => (
                   <Field key={f} label={FEATURE_LABEL[f]} error={errors[f]}>
@@ -412,18 +412,18 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
         {/* Paso 3: vista previa */}
         {step === 2 && property && !limited && !readOnly && (
           <section className={card}>
-            <h2 className="text-lg font-bold text-navy">Vista previa</h2>
+            <h2 className="text-lg font-bold text-ink">Vista previa</h2>
             <p className="text-sm text-slate-600">Así verán tu propiedad en los resultados. Revisa que todo esté bien.</p>
-            <article className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+            <article className="overflow-hidden rounded-xl border border-slate-200">
               <div className="relative aspect-[16/9] bg-slate-100">
                 {cover && <Image src={cover} alt="Foto principal" fill sizes="(min-width: 768px) 700px, 100vw" className="object-cover" />}
-                <span className="absolute left-3 top-3 rounded-full bg-accent/90 px-3 py-1 text-xs font-bold uppercase tracking-wide text-navy shadow">
+                <span className="absolute left-3 top-3 rounded-full bg-azure/90 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white shadow">
                   {values["operation"] === "rent" ? "Renta" : "Venta"}
                 </span>
               </div>
               <div className="space-y-2 p-5">
-                <h3 className="text-xl font-bold text-navy">{values["title"] || "Sin título"}</h3>
-                <p className="text-[1.4rem] font-bold text-navy">
+                <h3 className="text-xl font-bold text-ink">{values["title"] || "Sin título"}</h3>
+                <p className="text-[1.4rem] font-bold text-ink">
                   {formatMxn(Number(values["price"]) || 0)} <span className="text-xs font-semibold text-slate-500">MXN{values["operation"] === "rent" && " /mes"}</span>
                 </p>
                 <p className="text-sm text-slate-600">
@@ -454,7 +454,7 @@ export function PropertyForm({ initial }: { initial?: MyProperty }) {
                 ) : (
                   <button type="button" disabled={busy} onClick={() => void submit()} className={primaryBtn}>{busy ? "Enviando…" : "Enviar a revisión"}</button>
                 )}
-                <button type="button" disabled={busy} onClick={() => void saveDraft()} className="cursor-pointer text-sm font-semibold text-navy underline disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={() => void saveDraft()} className="cursor-pointer text-sm font-semibold text-ink underline disabled:opacity-50">
                   Guardar borrador
                 </button>
               </>

@@ -1,5 +1,6 @@
 import type { Prisma, PropertyStatus } from "@prisma/client";
 import { FEATURE_FIELDS_BY_TYPE, IMAGE_LIMITS, propertyDraftSchema, REQUIRED_FIELD_LABEL, type PropertyPatch } from "@cosave/shared";
+import { auditCreate, type AuditEntry } from "./audit.js";
 import { env } from "./env.js";
 import { HttpError } from "./errors.js";
 import { prisma } from "./prisma.js";
@@ -105,14 +106,15 @@ export async function findDuplicates(p: PropertyRow): Promise<string[]> {
     .map((o) => o.publicCode);
 }
 
-/** Cambia el estado y deja constancia en el historial, en una sola transacción. */
+/** Cambia el estado y deja constancia en el historial (y en la bitácora si se pide), en una sola transacción. */
 export async function moveStatus(
   p: PropertyRow,
   to: PropertyStatus,
   actorId: string,
-  opts: { note?: string | null; data?: Prisma.PropertyUpdateInput } = {},
+  opts: { note?: string | null; data?: Prisma.PropertyUpdateInput; audit?: AuditEntry } = {},
 ) {
   await prisma.$transaction([
+    ...(opts.audit ? [auditCreate(opts.audit)] : []),
     prisma.property.update({
       where: { id: p.id },
       data: {

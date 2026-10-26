@@ -65,8 +65,8 @@ export function FavoriteAction({ code }: { code: string }) {
       type="button"
       onClick={toggle}
       aria-pressed={saved}
-      className={`flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-[0.9rem] font-semibold transition-colors ${
-        saved ? "border-red-500 text-red-500 hover:bg-red-50" : "border-navy text-navy hover:bg-navy hover:text-white"
+      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-4 py-2 text-[0.9rem] font-semibold transition-colors ${
+        saved ? "border-red-500 text-red-500 hover:bg-red-50" : "border-slate-300 text-ink hover:border-slate-400 hover:bg-slate-50"
       }`}
     >
       {heart(saved, "h-4 w-4")}

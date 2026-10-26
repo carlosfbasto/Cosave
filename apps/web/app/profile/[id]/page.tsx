@@ -24,7 +24,7 @@ export default async function UserProfilePage({ params }: PageProps<"/profile/[i
       <div className="mx-auto max-w-3xl space-y-8 px-4 py-10">
         <ProfileHeader user={u} />
         <section>
-          <h2 className="mb-2 text-lg font-bold text-navy">Datos del perfil</h2>
+          <h2 className="mb-2 text-lg font-bold text-ink">Datos del perfil</h2>
           <ProfileDetails userId={u.id} publicRows={publicRows} privateRows={privateRows} />
         </section>
       </div>

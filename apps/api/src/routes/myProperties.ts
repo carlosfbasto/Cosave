@@ -11,6 +11,7 @@ import {
   PROPERTY_STATUS_LABEL,
   propertyStatusSchema,
 } from "@cosave/shared";
+import { auditCreate, changedFields } from "../lib/audit.js";
 import { handler, HttpError } from "../lib/errors.js";
 import { EXTENSION, sniffImage } from "../lib/magic.js";
 import { prisma } from "../lib/prisma.js";
@@ -117,14 +118,21 @@ myPropertiesRouter.patch(
 
     const type = patch.type ?? p.type;
     const { property, location, features } = writeData(patch, type);
-    await prisma.property.update({
-      where: { id },
-      data: {
-        ...property,
-        ...(Object.keys(location).length && { location: { upsert: { create: { state: "", city: "", ...location }, update: location } } }),
-        ...(Object.keys(features).length && { features: { upsert: { create: features, update: features } } }),
-      },
-    });
+    // En una propiedad ya visible (publicada o pausada) cada cambio queda en la bitácora; un borrador no.
+    const changes = scope === "limited" ? changedFields(currentValues(p), patch) : null;
+    await prisma.$transaction([
+      prisma.property.update({
+        where: { id },
+        data: {
+          ...property,
+          ...(Object.keys(location).length && { location: { upsert: { create: { state: "", city: "", ...location }, update: location } } }),
+          ...(Object.keys(features).length && { features: { upsert: { create: features, update: features } } }),
+        },
+      }),
+      ...(changes?.keys.length
+        ? [auditCreate({ actorId: req.user!.id, action: "property.edited", entityType: "property", entityId: id, before: changes.before, after: changes.after })]
+        : []),
+    ]);
     res.json({ data: await view(id, req.user!.id) });
   }),
 );
@@ -202,7 +210,16 @@ myPropertiesRouter.delete(
     if (p.status === "published" && p.images.length === 1) {
       throw new HttpError(409, "last_image", "Una propiedad publicada necesita al menos una foto. Sube otra antes de borrar esta.");
     }
-    await prisma.propertyImage.delete({ where: { id: imageId } });
+    await prisma.$transaction([
+      prisma.propertyImage.delete({ where: { id: imageId } }),
+      auditCreate({
+        actorId: req.user!.id,
+        action: "property.image_deleted",
+        entityType: "property",
+        entityId: id,
+        before: { imageId, storagePath: img.storagePath, position: img.position },
+      }),
+    ]);
     await removeImage(img.storagePath);
     res.json({ data: await view(id, req.user!.id) });
   }),

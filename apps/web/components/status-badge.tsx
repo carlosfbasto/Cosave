@@ -2,11 +2,11 @@ import { PROPERTY_STATUS_LABEL, type PropertyStatus } from "@cosave/shared";
 
 export const STATUS_STYLE: Record<PropertyStatus, string> = {
   draft: "bg-slate-100 text-slate-700",
-  pending: "bg-accent/30 text-navy",
+  pending: "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200",
   published: "bg-emerald-100 text-emerald-800",
   paused: "bg-sky-100 text-sky-800",
-  sold: "bg-navy text-white",
-  rented: "bg-navy text-white",
+  sold: "bg-ink text-white",
+  rented: "bg-ink text-white",
   rejected: "bg-red-100 text-red-700",
   archived: "bg-slate-200 text-slate-600",
 };

@@ -12,7 +12,7 @@ import { showToast } from "@/lib/toast";
 
 type AccountData = Profile;
 
-const field = "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-navy focus:outline-none";
+const field = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15";
 
 /** Avatar con la inicial del nombre, para cuentas que aún no suben foto. */
 function initialsAvatar(name: string) {
@@ -78,30 +78,30 @@ export function AccountProfile({ id }: { id: string }) {
 
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-navy">Datos del perfil</h2>
+            <h2 className="text-lg font-bold text-ink">Datos del perfil</h2>
             {!editing && (
-              <button type="button" onClick={() => setEditing(true)} className="cursor-pointer text-sm font-semibold text-navy underline">
+              <button type="button" onClick={() => setEditing(true)} className="cursor-pointer text-sm font-semibold text-ink underline">
                 Editar datos
               </button>
             )}
           </div>
           {editing ? (
             <form onSubmit={onSubmit} className="space-y-3">
-              <label className="block text-sm text-navy">
+              <label className="block text-sm text-ink">
                 Nombre completo
                 <input name="fullName" defaultValue={profile.fullName} required maxLength={120} className={`${field} mt-1`} />
               </label>
-              <label className="block text-sm text-navy">
+              <label className="block text-sm text-ink">
                 Teléfono
                 <input name="phone" defaultValue={profile.phone ?? ""} maxLength={30} className={`${field} mt-1`} />
               </label>
-              <label className="block text-sm text-navy">
+              <label className="block text-sm text-ink">
                 Ciudad
                 <input name="city" defaultValue={profile.city ?? ""} maxLength={80} className={`${field} mt-1`} />
               </label>
               {formError && <p role="alert" className="text-sm text-red-600">{formError}</p>}
               <div className="flex gap-3">
-                <button className="cursor-pointer rounded-md bg-accent px-4 py-2 text-sm font-semibold text-navy transition-colors hover:bg-accent-hover">Guardar</button>
+                <button className="cursor-pointer rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ink-hover">Guardar</button>
                 <button type="button" onClick={() => setEditing(false)} className="cursor-pointer text-sm font-semibold text-slate-600 underline">Cancelar</button>
               </div>
             </form>

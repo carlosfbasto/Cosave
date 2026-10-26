@@ -4,8 +4,8 @@ import { ROLE_LABEL, type MockUser } from "@/lib/mock-users";
 const roleStyle: Record<MockUser["role"], string> = {
   buyer: "bg-sky-100 text-sky-800",
   seller: "bg-emerald-100 text-emerald-800",
-  agent: "bg-accent/30 text-navy",
-  admin: "bg-navy text-white",
+  agent: "bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200",
+  admin: "bg-ink text-white",
 };
 
 export function Avatar({ user, size = 48 }: { user: Pick<MockUser, "fullName" | "avatar">; size?: number }) {

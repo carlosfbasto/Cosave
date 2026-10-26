@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Plus_Jakarta_Sans } from "next/font/google";
 import { HideOnAdmin } from "@/components/hide-on-admin";
 import { PendingActionRunner } from "@/components/pending-action-runner";
 import { SiteFooter } from "@/components/site-footer";
@@ -7,8 +7,14 @@ import { SiteHeader } from "@/components/site-header";
 import { ToastHost } from "@/components/toast-host";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Inter para texto y controles; Plus Jakarta Sans para títulos y precios (docs/DESIGN.md).
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
@@ -28,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${jakarta.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <HideOnAdmin><SiteHeader /></HideOnAdmin>

@@ -138,7 +138,7 @@ export function SearchBox() {
         aria-autocomplete="list"
         aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
         autoComplete="off"
-        className="w-[30ch] max-w-full rounded-md border border-transparent bg-white/10 py-2 pl-3 pr-[4.5rem] text-sm text-white placeholder:text-white/60 focus:border-accent focus:bg-white/20 focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+        className="w-[22ch] max-w-full rounded-lg xl:w-[28ch] border border-slate-200 bg-slate-50 py-2 pl-3 pr-[4.5rem] text-sm text-ink placeholder:text-slate-400 transition-[border-color,box-shadow,background-color] focus:border-azure focus:bg-white focus:outline-none focus:ring-2 focus:ring-azure/15 [&::-webkit-search-cancel-button]:hidden"
       />
       <div className="absolute inset-y-0 right-0 flex items-center">
         {text && (
@@ -146,7 +146,7 @@ export function SearchBox() {
             type="button"
             onClick={clear}
             aria-label="Borrar búsqueda"
-            className="grid h-9 w-8 cursor-pointer place-items-center text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="grid h-9 w-8 cursor-pointer place-items-center text-slate-400 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
               <path d="M6 6l12 12M18 6L6 18" />
@@ -156,7 +156,7 @@ export function SearchBox() {
         <button
           type="submit"
           aria-label="Buscar"
-          className="grid h-full w-9 cursor-pointer place-items-center rounded-r-md text-white/80 transition-colors hover:bg-accent hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="grid h-full w-9 cursor-pointer place-items-center rounded-r-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
             <circle cx="11" cy="11" r="6.5" />
@@ -165,12 +165,12 @@ export function SearchBox() {
         </button>
       </div>
       {empty && (
-        <p role="alert" className="absolute left-0 right-0 top-full z-30 mt-1 rounded-md bg-white px-3 py-2 text-sm text-navy shadow-xl ring-1 ring-slate-200">
+        <p role="alert" className="absolute left-0 right-0 top-full z-30 mt-1 rounded-lg bg-white px-3 py-2 text-sm text-ink shadow-veil ring-1 ring-slate-200">
           Escribe qué quieres buscar.
         </p>
       )}
       {showList && (
-        <ul id={listId} role="listbox" className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-md bg-white py-1 shadow-xl ring-1 ring-slate-200">
+        <ul id={listId} role="listbox" className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-lg bg-white py-1 shadow-veil ring-1 ring-slate-200">
           {suggestions.map((s, i) => (
             <li key={`${s.kind}-${s.label}`} id={`${listId}-${i}`} role="option" aria-selected={i === active}>
               <button
@@ -178,7 +178,7 @@ export function SearchBox() {
                 tabIndex={-1}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => pick(s)}
-                className={`flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-sm text-navy transition-colors hover:bg-slate-100 ${i === active ? "bg-slate-100" : ""}`}
+                className={`flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-slate-100 ${i === active ? "bg-slate-100" : ""}`}
               >
                 <span className="truncate">{s.label}</span>
                 <span className="shrink-0 text-xs text-slate-500">{s.kind}</span>

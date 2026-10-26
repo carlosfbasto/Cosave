@@ -43,7 +43,7 @@ export function PropertiesMap({ items }: { items: ListedProperty[] }) {
 
   return (
     <div className="space-y-2">
-      <div ref={el} className="z-0 h-[32rem] w-full overflow-hidden rounded-xl border border-slate-200 shadow-sm" />
+      <div ref={el} className="z-0 h-[32rem] w-full overflow-hidden rounded-xl border border-slate-200" />
       {withCoords.length < items.length && (
         <p className="text-xs text-slate-500">
           {items.length - withCoords.length} {items.length - withCoords.length === 1 ? "propiedad no tiene" : "propiedades no tienen"} ubicación en el mapa; las encuentras en el listado.

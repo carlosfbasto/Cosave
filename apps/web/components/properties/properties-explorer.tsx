@@ -25,7 +25,7 @@ const tabs = [
   { href: "/properties/rentals", label: "Propiedades en renta", op: "rent" },
 ] as const;
 
-const tabBase = "rounded-md px-4 py-2 text-[0.9rem] font-medium transition-colors";
+const tabBase = "rounded-lg px-4 py-2 text-[0.9rem] font-medium transition-colors";
 
 export function PropertiesExplorer({ operation }: { operation: Operation }) {
   const router = useRouter();
@@ -51,6 +51,19 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
 
   // Recuerda esta lista para el botón "Volver a resultados" de la ficha.
   useEffect(() => rememberResults(`${pathname}${query}`), [pathname, query]);
+
+  // Panel de filtros en móvil: Escape lo cierra y la página de fondo no se desplaza.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   // `skip` ignora un filtro de lista: así cada opción cuenta lo que daría al marcarla, con lo demás ya aplicado.
   const matches = useMemo(() => {
@@ -107,21 +120,21 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
   return (
     <main className="flex-1 bg-slate-50">
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="mb-1 text-3xl font-bold tracking-tight text-navy">{title}</h1>
-        <p className="mb-6 text-sm text-slate-600">
+        <h1 className="mb-1 font-display text-3xl font-bold tracking-tight text-ink">{title}</h1>
+        <p className="mb-6 text-sm text-slate-500">
           {!ready ? "Cargando propiedades…" : <>{results.length} {results.length === 1 ? "resultado" : "resultados"}</>}
           {q && <> para “{q}”{priceNote && <> ({priceNote})</>}</>}
         </p>
 
         {/* Barra superior: venta / renta · orden · mapa */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
-          <nav aria-label="Tipo de operación" className="flex flex-wrap gap-2">
+          <nav aria-label="Tipo de operación" className="flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1">
             {tabs.map((t) => (
               <Link
                 key={t.op}
                 href={`${t.href}${query}`}
                 aria-current={operation === t.op ? "page" : undefined}
-                className={`${tabBase} ${operation === t.op ? "bg-navy text-white" : "border border-slate-300 bg-white text-navy hover:border-navy hover:bg-slate-100"}`}
+                className={`${tabBase} ${operation === t.op ? "bg-ink text-white" : "text-slate-600 hover:bg-slate-50 hover:text-ink"}`}
               >
                 {t.label}
               </Link>
@@ -132,7 +145,7 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
               aria-label="Ordenar propiedades"
               value={sort}
               onChange={(e) => update({ sort: e.target.value as Sort })}
-              className="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-2 text-[0.9rem] font-medium text-navy transition-colors hover:border-navy focus:border-navy focus:outline-none"
+              className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[0.9rem] font-medium text-ink transition-colors hover:border-slate-300 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15"
             >
               <option value="recent">Últimos publicados</option>
               <option value="asc">Precio de menor a mayor</option>
@@ -140,8 +153,11 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
             </select>
             <Link
               href="/properties/map"
-              className="rounded-md bg-accent px-4 py-2 text-[0.9rem] font-semibold text-navy transition-colors hover:bg-accent-hover"
+              className="btn btn-outline bg-white px-4 py-2.5 text-[0.9rem]"
             >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
+                <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" />
+              </svg>
               Ver mapa
             </Link>
           </div>
@@ -153,12 +169,35 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
               type="button"
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
-              className="mb-3 w-full rounded-md border border-navy px-4 py-2 text-[0.9rem] font-semibold text-navy transition-colors hover:bg-navy hover:text-white lg:hidden"
+              aria-controls="filters-drawer"
+              className="btn btn-outline mb-3 w-full bg-white px-4 py-2.5 text-[0.9rem] lg:hidden"
             >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                <path d="M4 6h16M7 12h10M10 18h4" />
+              </svg>
               {open ? "Ocultar filtros" : "Mostrar filtros"}
             </button>
-            <div className={`${open ? "block" : "hidden"} lg:block`}>
-              <FiltersSidebar facets={facets} filters={filters} counts={counts} isRent={operation === "rent"} onChange={(f) => update({ filters: f })} onReset={reset} />
+            {/* En móvil los filtros se abren como panel lateral sobre la lista; en escritorio son una columna fija. */}
+            <div id="filters-drawer" className={`${open ? "fixed inset-0 z-[1100] flex" : "hidden"} lg:static lg:z-auto lg:block`}>
+              <button type="button" aria-label="Cerrar filtros" onClick={() => setOpen(false)} className="scrim absolute inset-0 cursor-default lg:hidden" />
+              <div
+                role={open ? "dialog" : undefined}
+                aria-modal={open ? true : undefined}
+                aria-label="Filtros"
+                className="relative flex h-full w-[88%] max-w-sm flex-col overflow-y-auto bg-slate-50 p-4 shadow-veil lg:h-auto lg:w-auto lg:max-w-none lg:overflow-visible lg:bg-transparent lg:p-0 lg:shadow-none"
+              >
+                <div className="mb-2 flex justify-end lg:hidden">
+                  <button type="button" onClick={() => setOpen(false)} aria-label="Cerrar filtros" className="grid h-9 w-9 cursor-pointer place-items-center rounded-full text-slate-500 transition-colors hover:bg-slate-200 hover:text-ink">
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
+                  </button>
+                </div>
+                <FiltersSidebar facets={facets} filters={filters} counts={counts} isRent={operation === "rent"} onChange={(f) => update({ filters: f })} onReset={reset} />
+                <div className="sticky bottom-0 -mx-4 mt-4 border-t border-slate-200 bg-white p-4 lg:hidden">
+                  <button type="button" onClick={() => setOpen(false)} className="btn btn-primary w-full px-4 py-3">
+                    Ver {results.length} {results.length === 1 ? "resultado" : "resultados"}
+                  </button>
+                </div>
+              </div>
             </div>
           </aside>
 
@@ -172,8 +211,8 @@ export function PropertiesExplorer({ operation }: { operation: Operation }) {
                 <p className="text-slate-700">
                   {q ? <>No encontramos propiedades para “{q}”{hasFilters && " con estos filtros"}.</> : "No hay propiedades con estos filtros."}
                 </p>
-                <div className="flex flex-wrap gap-4 text-sm font-semibold text-navy">
-                  <button type="button" onClick={openSaveSearch} disabled={me.loading} className="cursor-pointer underline">
+                <div className="flex flex-wrap gap-4 text-sm font-semibold text-ink">
+                  <button type="button" onClick={openSaveSearch} disabled={me.loading} className="cursor-pointer text-azure underline">
                     Guardar mi búsqueda
                   </button>
                   {hasFilters && (

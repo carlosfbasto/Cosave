@@ -26,7 +26,7 @@ export function UserMenu({
   const close = useCallback(() => setOpen(false), []);
   useDismiss(open, close, box);
 
-  const item = "flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-navy transition-colors hover:bg-slate-100";
+  const item = "flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm text-ink transition-colors hover:bg-slate-100";
   return (
     <div ref={box} className="relative">
       <button
@@ -36,12 +36,12 @@ export function UserMenu({
         aria-expanded={open}
         aria-label={`Menú de ${name}`}
         title={name}
-        className="cursor-pointer rounded-full transition-shadow hover:ring-2 hover:ring-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="flex cursor-pointer items-center gap-2.5 rounded-full transition-shadow hover:ring-2 hover:ring-azure focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-azure xl:rounded-xl xl:py-1 xl:pl-1 xl:pr-3 xl:hover:bg-slate-50 xl:hover:ring-1 xl:hover:ring-slate-200"
       >
         {children}
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-30 mt-2 w-52 overflow-hidden rounded-md bg-white py-1 shadow-xl ring-1 ring-slate-200">
+        <div role="menu" className="absolute right-0 top-full z-30 mt-2 w-52 overflow-hidden rounded-lg bg-white py-1 shadow-veil ring-1 ring-slate-200">
           <p className="truncate border-b border-slate-100 px-4 py-2 text-xs text-slate-500">{name}</p>
           <Link href={profileHref} role="menuitem" onClick={() => setOpen(false)} className={item}>
             Perfil

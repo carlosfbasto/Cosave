@@ -13,7 +13,7 @@ import { useProperties } from "@/lib/use-catalog";
 import { showToast } from "@/lib/toast";
 import { UNAVAILABLE_LABEL } from "@cosave/shared";
 
-const card = "rounded-xl border border-slate-200 bg-white p-6 shadow-sm";
+const card = "rounded-xl border border-slate-200 bg-white p-6";
 
 /** Favoritos de un usuario. Solo el dueño de la sesión puede ver y modificar su lista. */
 export default function FavoritesPage({ params }: PageProps<"/favorites/[id]">) {
@@ -37,11 +37,11 @@ export default function FavoritesPage({ params }: PageProps<"/favorites/[id]">) 
     <main className="flex-1 bg-slate-50">
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-10">
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-          <BackButton className="font-medium text-navy transition-colors hover:text-accent-hover" />
-          <Link href={`/profile/${meId}`} className="text-slate-500 transition-colors hover:text-navy">Mi perfil</Link>
+          <BackButton className="font-medium text-ink transition-colors hover:text-azure-hover" />
+          <Link href={`/profile/${meId}`} className="text-slate-500 transition-colors hover:text-ink">Mi perfil</Link>
         </div>
         <header>
-          <h1 className="text-3xl font-bold tracking-tight text-navy">Mis favoritos</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-ink">Mis favoritos</h1>
           <p className="mt-1 text-sm text-slate-600">
             {items.length === 0 ? "Aún no has guardado propiedades." : `${items.length} ${items.length === 1 ? "propiedad guardada" : "propiedades guardadas"}.`}
           </p>
@@ -50,7 +50,7 @@ export default function FavoritesPage({ params }: PageProps<"/favorites/[id]">) 
         {items.length === 0 ? (
           <div className={`${card} text-center`}>
             <p className="mb-4 text-sm text-slate-600">Toca el corazón de una propiedad para guardarla aquí.</p>
-            <Link href="/properties" className="inline-block rounded-md bg-accent px-5 py-2.5 font-semibold text-navy transition-colors hover:bg-accent-hover">
+            <Link href="/properties" className="inline-block rounded-lg bg-ink px-5 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
               Explorar propiedades
             </Link>
           </div>
@@ -62,24 +62,24 @@ export default function FavoritesPage({ params }: PageProps<"/favorites/[id]">) 
               const status = favs.statusOf(p.code);
               const unavailable = status === "published" ? null : (UNAVAILABLE_LABEL[status] ?? "Retirada");
               return (
-                <li key={p.code} className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:flex-row">
+                <li key={p.code} className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white sm:flex-row">
                   <Link href={`/properties/${p.code}`} className="relative aspect-[4/3] shrink-0 sm:aspect-auto sm:w-64" aria-label={`Ver propiedad: ${p.title}`}>
                     <Image src={p.image} alt={p.title} fill sizes="(min-width: 640px) 256px, 100vw" className={`object-cover ${unavailable ? "opacity-60 grayscale" : ""}`} />
                     {unavailable && (
-                      <span className="absolute left-3 top-3 rounded-full bg-navy px-3 py-1 text-xs font-bold text-white">{unavailable}</span>
+                      <span className="absolute left-3 top-3 rounded-full bg-ink px-3 py-1 text-xs font-bold text-white">{unavailable}</span>
                     )}
                   </Link>
                   <div className="flex flex-1 flex-col gap-3 p-5">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-lg font-bold text-navy">{p.title}</h2>
+                        <h2 className="text-lg font-bold text-ink">{p.title}</h2>
                         <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">{isRent ? "Renta" : "Venta"} · {p.city}</span>
                       </div>
                       <p className="mt-1 line-clamp-2 text-sm text-slate-600">{p.description}</p>
                       <p className="mt-1 text-xs text-slate-500">{p.bedrooms} recámaras · {p.bathrooms} baños · {p.area} m²</p>
                     </div>
                     <p className="mt-auto flex items-baseline">
-                      <span className="mr-2 text-2xl font-bold text-navy">{formatMxn(p.price)}</span>
+                      <span className="mr-2 text-2xl font-bold text-ink">{formatMxn(p.price)}</span>
                       <span className="text-xs font-semibold text-slate-500">MXN{isRent && " /mes"}</span>
                     </p>
                     <div className="flex flex-wrap gap-3">
@@ -88,7 +88,7 @@ export default function FavoritesPage({ params }: PageProps<"/favorites/[id]">) 
                       ) : (
                         <Link
                           href={`/properties/${p.code}`}
-                          className="rounded-md bg-accent px-4 py-2 text-[0.9rem] font-semibold text-navy transition-colors hover:bg-accent-hover"
+                          className="rounded-lg bg-ink px-4 py-2 text-[0.9rem] font-semibold text-white transition-colors hover:bg-ink-hover"
                         >
                           {isRent ? "Rentar ahora" : "Comprar ahora"}
                         </Link>
@@ -98,7 +98,7 @@ export default function FavoritesPage({ params }: PageProps<"/favorites/[id]">) 
                         onClick={async () => {
                           if (await favs.remove(p.code)) showToast("Se eliminó de favoritos");
                         }}
-                        className="cursor-pointer rounded-md border border-slate-300 px-4 py-2 text-[0.9rem] font-semibold text-slate-700 transition-colors hover:border-red-500 hover:text-red-600"
+                        className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-[0.9rem] font-semibold text-slate-700 transition-colors hover:border-red-500 hover:text-red-600"
                       >
                         Eliminar de favoritos
                       </button>

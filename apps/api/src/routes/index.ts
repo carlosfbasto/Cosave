@@ -3,6 +3,7 @@ import { adminRouter } from "./admin.js";
 import { favoritesRouter } from "./favorites.js";
 import { inquiriesRouter } from "./inquiries.js";
 import { meRouter } from "./me.js";
+import { notificationsRouter } from "./notifications.js";
 import { propertiesRouter } from "./properties.js";
 import { savedSearchesRouter } from "./savedSearches.js";
 
@@ -15,3 +16,4 @@ apiRouter.use("/properties", propertiesRouter); // público
 apiRouter.use("/favorites", favoritesRouter);
 apiRouter.use("/inquiries", inquiriesRouter);
 apiRouter.use("/saved-searches", savedSearchesRouter);
+apiRouter.use("/notifications", notificationsRouter);

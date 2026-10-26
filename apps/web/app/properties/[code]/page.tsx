@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { WantItButton } from "@/components/want-it-button";
 import { FavoriteAction } from "@/components/favorite-button";
 import { Advertiser } from "@/components/property-detail/advertiser";
 import { BackButton } from "@/components/back-button";
-import { Gallery } from "@/components/property-detail/gallery";
+import { PhotoMosaic } from "@/components/property-detail/photo-mosaic";
 import { ShareButton } from "@/components/property-detail/share-button";
-import { SimilarCarousel } from "@/components/property-detail/similar-carousel";
+import { PropertyShowcaseCard } from "@/components/home/property-showcase-card";
 import { UNAVAILABLE_LABEL } from "@cosave/shared";
 import { fetchCatalog, fetchProperty } from "@/lib/catalog";
-import { cityCoords, detailsFor, formatMxn, galleryFor, similarTo } from "@/lib/mock-data";
+import { cityCoords, detailsFor, formatMxn, galleryFor, similarTo, slugify } from "@/lib/mock-data";
 import { advertiserOf } from "@/lib/mock-users";
 
 /** Vista previa al compartir el enlace (título, descripción e imagen de la propiedad). */
@@ -28,6 +27,20 @@ export async function generateMetadata({ params }: PageProps<"/properties/[code]
   };
 }
 
+const svg = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true } as const;
+
+/** Íconos de la franja de datos rápidos. */
+const icons = {
+  build: <path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6" />,
+  land: <path d="M4 4h16v16H4zM4 9h5M9 4v5" />,
+  beds: <path d="M3 18v-7a2 2 0 012-2h14a2 2 0 012 2v7M3 15h18M7 9V6h10v3" />,
+  baths: <path d="M3 12h18v2a5 5 0 01-5 5H8a5 5 0 01-5-5v-2zM6 12V6a2 2 0 014 0" />,
+  parking: <path d="M5 17h14M6 17l1.5-6h9L18 17M7 20v-3M17 20v-3M8 14h.01M16 14h.01" />,
+  type: <path d="M20 12l-8 8-9-9V3h8l9 9zM7.5 7.5h.01" />,
+};
+
+const card = "rounded-2xl border border-slate-200 bg-white p-6 sm:p-8";
+
 /** Ficha de una propiedad. Los datos vienen del api; sin api se muestran los de demostración. */
 export default async function PropertyDetailPage({ params }: PageProps<"/properties/[code]">) {
   const { code } = await params;
@@ -43,7 +56,10 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
   const d = demo ? detailsFor(p) : null;
   const paragraphs = d ? d.paragraphs : p.description ? p.description.split(/\n{2,}/) : [];
   const advertiser = demo ? advertiserOf(p.code) : undefined;
-  const similar = similarTo(p, (await fetchCatalog()).items);
+  const catalog = (await fetchCatalog()).items;
+  const similar = similarTo(p, catalog).slice(0, 3);
+  const sameKind = catalog.filter((o) => o.code !== p.code && o.type === p.type && o.operation === p.operation).length;
+  const listHref = isRent ? "/properties/rentals" : "/properties/sale";
 
   // Mapa: coordenadas reales si la propiedad las tiene; si no, el centro de su ciudad.
   const c = cityCoords[p.city];
@@ -66,95 +82,173 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
     ["Clave", p.code],
   ];
 
+  // Franja de datos rápidos: solo los que tienen valor.
+  const quick = [
+    p.area ? { icon: icons.build, value: `${p.area.toLocaleString("es-MX")} m²`, label: "Construcción" } : null,
+    p.landArea ? { icon: icons.land, value: `${p.landArea.toLocaleString("es-MX")} m²`, label: "Terreno" } : null,
+    p.bedrooms ? { icon: icons.beds, value: String(p.bedrooms), label: "Recámaras" } : null,
+    p.bathrooms ? { icon: icons.baths, value: String(p.bathrooms), label: "Baños" } : null,
+    p.parkingSpots ? { icon: icons.parking, value: String(p.parkingSpots), label: "Estacionamientos" } : null,
+    { icon: icons.type, value: p.type, label: "Tipo" },
+  ].filter((q) => q !== null);
+
   return (
     <main className="flex-1 bg-slate-50">
-      <div className="mx-auto max-w-[1200px] px-4 py-8">
-        <BackButton className="mb-3 inline-block text-sm font-semibold text-navy transition-colors hover:text-accent-hover" />
-        <nav aria-label="Ruta" className="mb-4 text-sm text-slate-500">
-          <Link href="/properties" className="transition-colors hover:text-navy">Propiedades</Link> /{" "}
-          <Link href={isRent ? "/properties/rentals" : "/properties/sale"} className="transition-colors hover:text-navy">
-            {isRent ? "En renta" : "En venta"}
-          </Link>{" "}
-          / <span className="text-navy">{p.code}</span>
-        </nav>
+      {/* Barra de la ficha: volver, ruta y clave · favoritos y compartir */}
+      <div className="sticky top-16 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-2.5 md:px-8">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <BackButton className="font-semibold text-ink transition-colors hover:text-azure" />
+            <span aria-hidden className="text-slate-300">|</span>
+            <nav aria-label="Ruta" className="hidden text-slate-500 sm:block">
+              <Link href="/properties" className="transition-colors hover:text-ink">Propiedades</Link> /{" "}
+              <Link href={listHref} className="transition-colors hover:text-ink">{isRent ? "En renta" : "En venta"}</Link>
+            </nav>
+            <span className="label-sm rounded-md bg-slate-100 px-2.5 py-1 text-slate-600">Clave {p.code}</span>
+          </div>
+          <div className="flex items-center gap-2 [&>button]:py-1.5 [&>button]:text-sm">
+            {!unavailable && <FavoriteAction code={p.code} />}
+            <ShareButton code={p.code} title={p.title} />
+          </div>
+        </div>
+      </div>
 
-        <div className="mx-auto max-w-[860px]">
-          <div className="min-w-0 space-y-8">
+      <div className="mx-auto max-w-[1440px] px-4 pb-16 pt-6 md:px-8">
+        <PhotoMosaic images={demo ? galleryFor(p) : (p.images?.length ? p.images : [p.image])} alt={p.title} info={info} />
+
+        {/* Escritorio: contenido (8 columnas) + panel del anunciante fijo (4). Móvil: el panel va tras el título y los datos. */}
+        <div className="mt-8 grid items-start gap-8 lg:grid-cols-12">
+          <div className="min-w-0 space-y-6 lg:col-span-8 lg:row-start-1">
             {unavailable && (
-              <p role="status" className="rounded-xl border border-slate-300 bg-white p-4 text-sm font-semibold text-navy shadow-sm">
+              <p role="status" className="rounded-xl border border-slate-300 bg-white p-4 text-sm font-semibold text-ink">
                 Esta propiedad ya no está disponible ({unavailable.toLowerCase()}). Puedes ver otras opciones similares más abajo.
               </p>
             )}
-            <Gallery images={demo ? galleryFor(p) : (p.images?.length ? p.images : [p.image])} alt={p.title} info={info} />
 
-            {/* Sección 1: descripción detallada */}
-            <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h1 className="text-2xl font-bold tracking-tight text-navy sm:text-3xl">{p.title}</h1>
-              <p className="mt-2 flex items-baseline">
-                <span className="mr-2 text-[1.4rem] font-bold text-navy">{formatMxn(p.price)}</span>
-                <span className="text-xs font-semibold text-slate-500">MXN{isRent && " /mes"}</span>
+            {/* Título, ubicación y precio */}
+            <section className={card}>
+              <p className="flex items-center gap-1.5 text-sm text-slate-500">
+                <svg {...svg} className="h-4 w-4 shrink-0 text-azure"><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>
+                {where}
+                {p.postalCode && <span className="text-slate-400">· CP {p.postalCode}</span>}
               </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                {!unavailable && <WantItButton code={p.code} title={p.title} />}
-                {!unavailable && <FavoriteAction code={p.code} />}
-                <ShareButton code={p.code} title={p.title} />
+              <h1 className="mt-2 font-display text-[1.75rem] font-bold leading-tight tracking-tight text-ink sm:text-[2rem] sm:leading-10">{p.title}</h1>
+              <div className="mt-5 flex flex-wrap items-end justify-between gap-3 rounded-xl bg-slate-50 p-4 sm:p-5">
+                <div>
+                  <p className="label-sm text-slate-500">{isRent ? "En renta" : "En venta"}</p>
+                  <p className="mt-1 flex items-baseline gap-2">
+                    <span className="font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">{formatMxn(p.price)}</span>
+                    <span className="text-sm font-semibold text-slate-500">MXN{isRent && " /mes"}</span>
+                  </p>
+                </div>
+                {p.area > 0 && (
+                  <p className="text-sm text-slate-500" title="Precio por metro cuadrado construido">
+                    {formatMxn(Math.round(p.price / p.area))} /m²{isRent && " al mes"}
+                  </p>
+                )}
               </div>
-              {paragraphs.length > 0 && (
-                <div className="mt-4 space-y-3 whitespace-pre-line text-[0.95rem] leading-relaxed text-slate-700">
+            </section>
+
+            {/* Datos rápidos */}
+            <dl className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-2 sm:grid-cols-3 md:auto-cols-fr md:grid-flow-col md:grid-cols-none">
+              {quick.map((q) => (
+                <div key={q.label} className="flex flex-col items-center justify-center rounded-xl bg-slate-50 px-2 py-4 text-center">
+                  <svg {...svg} className="mb-1.5 h-5 w-5 text-azure">{q.icon}</svg>
+                  <dd className="font-display text-[0.95rem] font-bold text-ink">{q.value}</dd>
+                  <dt className="text-[0.75rem] text-slate-500">{q.label}</dt>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          {/* Panel del anunciante */}
+          <aside className="lg:sticky lg:top-36 lg:col-span-4 lg:col-start-9 lg:row-span-2 lg:row-start-1">
+            <Advertiser
+              user={advertiser}
+              listed={advertiser?.propertyCodes.length ?? 0}
+              name={found.advertiser?.fullName}
+              memberSince={found.advertiser?.memberSince}
+              property={{ code: p.code, title: p.title }}
+              unavailable={unavailable}
+            />
+          </aside>
+
+          <div className="min-w-0 space-y-6 lg:col-span-8 lg:row-start-2">
+            {paragraphs.length > 0 && (
+              <section className={card}>
+                <h2 className="headline-sm mb-4 text-ink">Descripción</h2>
+                <div className="space-y-3 whitespace-pre-line text-[0.95rem] leading-relaxed text-slate-700">
                   {paragraphs.map((t) => <p key={t}>{t}</p>)}
                 </div>
-              )}
+              </section>
+            )}
 
-              <h2 className="mb-3 mt-6 text-lg font-bold text-navy">Superficie y datos</h2>
-              <dl className="grid gap-x-8 sm:grid-cols-2">
+            <section className={card}>
+              <h2 className="headline-sm mb-4 text-ink">Superficie y datos</h2>
+              <dl className="grid gap-2 sm:grid-cols-2">
                 {rows.map(([k, v]) => (
-                  <div key={k} className="flex justify-between border-b border-slate-100 py-2 text-sm">
+                  <div key={k} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-4 py-3 text-sm">
                     <dt className="text-slate-500">{k}</dt>
-                    <dd className="font-medium text-navy">{v}</dd>
+                    <dd className="text-right font-semibold text-ink">{v}</dd>
                   </div>
                 ))}
               </dl>
 
               {d && (
-                <div className="mt-6 grid gap-6 sm:grid-cols-2">
+                <div className="mt-8 grid gap-6 sm:grid-cols-2">
                   <div>
-                    <h2 className="mb-2 text-lg font-bold text-navy">Características</h2>
-                    <ul className="space-y-1.5 text-sm text-slate-700">
-                      {d.features.map((f) => <li key={f} className="flex gap-2"><span className="text-accent">●</span>{f}</li>)}
+                    <h2 className="headline-sm mb-3 text-ink">Características</h2>
+                    <ul className="flex flex-wrap gap-2">
+                      {d.features.map((f) => <li key={f} className="label-sm rounded-md bg-slate-100 px-2.5 py-1.5 text-slate-600">{f}</li>)}
                     </ul>
                   </div>
                   <div>
-                    <h2 className="mb-2 text-lg font-bold text-navy">Materiales de construcción</h2>
-                    <ul className="space-y-1.5 text-sm text-slate-700">
-                      {d.materials.map((m) => <li key={m} className="flex gap-2"><span className="text-accent">●</span>{m}</li>)}
+                    <h2 className="headline-sm mb-3 text-ink">Materiales de construcción</h2>
+                    <ul className="flex flex-wrap gap-2">
+                      {d.materials.map((m) => <li key={m} className="label-sm rounded-md bg-slate-100 px-2.5 py-1.5 text-slate-600">{m}</li>)}
                     </ul>
                   </div>
                 </div>
               )}
             </section>
 
-            {/* Sección 2: anunciante (solo datos públicos) */}
-            <Advertiser user={advertiser} listed={advertiser?.propertyCodes.length ?? 0} name={found.advertiser?.fullName} memberSince={found.advertiser?.memberSince} />
-
-            {/* Sección 3: mapa */}
             {mapSrc && (
-              <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 className="mb-1 text-lg font-bold text-navy">Ubicación</h2>
-                <p className="mb-4 text-sm text-slate-600">{where}{!exact && " (ubicación aproximada)"}</p>
-                <iframe title={`Mapa de ${p.title}`} src={mapSrc} loading="lazy" className="h-80 w-full rounded-lg border-0" />
+              <section className={card}>
+                <h2 className="headline-sm mb-4 text-ink">Ubicación</h2>
+                <div className="relative overflow-hidden rounded-xl border border-slate-200">
+                  <iframe title={`Mapa de ${p.title}`} src={mapSrc} loading="lazy" className="block h-80 w-full border-0" />
+                  <div className="pointer-events-none absolute left-3 top-3 max-w-xs rounded-lg bg-white/95 p-3 shadow-glow ring-1 ring-slate-200 backdrop-blur-md">
+                    <p className="text-sm font-semibold text-ink">{where}</p>
+                    {!exact && <p className="text-xs text-slate-500">Ubicación aproximada</p>}
+                  </div>
+                </div>
               </section>
             )}
           </div>
-
         </div>
-
-        {/* Última sección: propiedades similares */}
-        <section className="mt-14">
-          <h2 className="mb-1 text-2xl font-bold tracking-tight text-navy">Propiedades similares</h2>
-          <p className="mb-6 text-sm text-slate-600">Otras opciones que podrían interesarte.</p>
-          <SimilarCarousel items={similar} />
-        </section>
       </div>
+
+      {/* Propiedades similares */}
+      {similar.length > 0 && (
+        <section className="border-t border-slate-200 bg-white py-14">
+          <div className="mx-auto max-w-[1440px] px-4 md:px-8">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="font-display text-2xl font-bold tracking-tight text-ink">Propiedades similares</h2>
+                <p className="mt-1 text-sm text-slate-600">Otras opciones que podrían interesarte.</p>
+              </div>
+              {sameKind > 0 && (
+                <Link href={`${listHref}?tipo=${slugify(p.type)}`} className="inline-flex items-center gap-1 text-sm font-semibold text-azure transition-colors hover:text-azure-hover">
+                  Ver todas ({sameKind}) →
+                </Link>
+              )}
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {similar.map((s) => <PropertyShowcaseCard key={s.code} p={s} />)}
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

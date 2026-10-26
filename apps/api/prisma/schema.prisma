@@ -51,6 +51,8 @@ enum NotificationChannel {
   email
   whatsapp
   push
+  /// Aviso dentro de la app (campana del header).
+  in_app
 }
 
 enum NotificationStatus {
@@ -287,8 +289,31 @@ model Notification {
   matchPropertyId    String?             @db.Uuid
   createdAt          DateTime            @default(now())
   sentAt             DateTime?
+  /// Cuándo la persona la vio (solo `in_app`); null = sin leer.
+  readAt             DateTime?
 
   user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status, channel])
+  @@index([userId, channel, createdAt])
+}
+
+/// Bitácora de acciones importantes: solo se escribe, nunca se edita ni se borra.
+/// `actorId` sin relación (como en PropertyStatusEvent) para que el registro sobreviva aunque se borre el perfil.
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String   @db.Uuid
+  /// p. ej. `user.role_changed`, `property.reviewed` (lista en packages/shared: AUDIT_ACTIONS).
+  action     String
+  /// `profile` o `property`.
+  entityType String
+  entityId   String   @db.Uuid
+  /// Solo los campos que cambiaron; nunca contraseñas ni tokens.
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([createdAt])
 }

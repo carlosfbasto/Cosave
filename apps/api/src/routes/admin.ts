@@ -1,11 +1,13 @@
 import { Router } from "express";
 import { z } from "zod";
-import { canTransition, IMAGE_LIMITS, PROPERTY_STATUSES, userRoleSchema } from "@cosave/shared";
+import { AUDIT_ACTIONS, canTransition, IMAGE_LIMITS, PROPERTY_STATUSES, userRoleSchema } from "@cosave/shared";
+import { auditCreate } from "../lib/audit.js";
 import { env } from "../lib/env.js";
 import { handler, HttpError } from "../lib/errors.js";
 import { moveStatus } from "../lib/property-service.js";
 import { ownerView, propertyInclude } from "../lib/property-view.js";
 import { prisma } from "../lib/prisma.js";
+import { notifySavedSearchMatches } from "../lib/search-matching.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 export const adminRouter = Router();
@@ -40,9 +42,14 @@ adminRouter.patch(
     const id = z.string().uuid().parse(req.params["id"]);
     const { role } = z.object({ role: userRoleSchema }).strict().parse(req.body);
     if (id === req.user!.id) throw new HttpError(400, "invalid", "No puedes cambiar tu propio rol");
-    const exists = await prisma.profile.findUnique({ where: { id }, select: { id: true } });
-    if (!exists) throw new HttpError(404, "not_found", "Usuario no encontrado");
-    const profile = await prisma.profile.update({ where: { id }, data: { role } });
+    const current = await prisma.profile.findUnique({ where: { id }, select: { role: true } });
+    if (!current) throw new HttpError(404, "not_found", "Usuario no encontrado");
+    const [profile] = await prisma.$transaction([
+      prisma.profile.update({ where: { id }, data: { role } }),
+      ...(current.role !== role
+        ? [auditCreate({ actorId: req.user!.id, action: "user.role_changed", entityType: "profile", entityId: id, before: { role: current.role }, after: { role } })]
+        : []),
+    ]);
     res.json({ data: profile });
   }),
 );
@@ -122,7 +129,18 @@ adminRouter.post(
     if (!p) throw new HttpError(404, "not_found", "Propiedad no encontrada");
     if (p.status !== "pending") throw new HttpError(409, "invalid_transition", "Solo se revisan publicaciones pendientes");
     const to = decision === "approve" ? "published" : "rejected";
-    await moveStatus(p, to, req.user!.id, { note, data: { reviewNote: decision === "reject" ? note : null } });
+    await moveStatus(p, to, req.user!.id, {
+      note,
+      data: { reviewNote: decision === "reject" ? note : null },
+      audit: {
+        actorId: req.user!.id,
+        action: "property.reviewed",
+        entityType: "property",
+        entityId: p.id,
+        before: { status: p.status },
+        after: { status: to, decision, ...(note && { note }) },
+      },
+    });
     await prisma.notification.create({
       data: {
         userId: p.ownerId,
@@ -136,6 +154,8 @@ adminRouter.post(
       },
     });
     const fresh = await prisma.property.findUniqueOrThrow({ where: { id }, include: propertyInclude });
+    // Avisar a quien guardó una búsqueda que coincide. Si falla, la aprobación ya quedó hecha.
+    if (decision === "approve") await notifySavedSearchMatches(fresh).catch((err: unknown) => console.error("Coincidencias de búsquedas guardadas:", err));
     res.json({ data: ownerView(fresh) });
   }),
 );
@@ -151,7 +171,17 @@ adminRouter.post(
     if (!canTransition(p.status, "archived", "admin", p.operation)) {
       throw new HttpError(409, "invalid_transition", "Solo se puede retirar una publicación visible o pausada");
     }
-    await moveStatus(p, "archived", req.user!.id, { note });
+    await moveStatus(p, "archived", req.user!.id, {
+      note,
+      audit: {
+        actorId: req.user!.id,
+        action: "property.archived_by_admin",
+        entityType: "property",
+        entityId: p.id,
+        before: { status: p.status },
+        after: { status: "archived", note },
+      },
+    });
     await prisma.notification.create({
       data: {
         userId: p.ownerId,
@@ -214,3 +244,31 @@ adminRouter.get("/config", (_req, res) => {
     },
   });
 });
+
+const auditQuery = z.object({
+  entityType: z.enum(["profile", "property"]).optional(),
+  entityId: z.string().uuid().optional(),
+  actorId: z.string().uuid().optional(),
+  action: z.enum(AUDIT_ACTIONS).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+});
+
+/** Bitácora de acciones importantes, más recientes primero, con el nombre de quién las hizo. */
+adminRouter.get(
+  "/audit",
+  handler(async (req, res) => {
+    const { page, pageSize, ...filters } = auditQuery.parse(req.query);
+    const where = Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== undefined));
+    const [rows, total] = await Promise.all([
+      prisma.auditLog.findMany({ where, orderBy: { createdAt: "desc" }, skip: (page - 1) * pageSize, take: pageSize }),
+      prisma.auditLog.count({ where }),
+    ]);
+    const actors = new Map(
+      (await prisma.profile.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.actorId))] } }, select: { id: true, fullName: true, email: true } })).map(
+        (a) => [a.id, a],
+      ),
+    );
+    res.json({ data: rows.map((r) => ({ ...r, actor: actors.get(r.actorId) ?? null })), meta: { page, pageSize, total } });
+  }),
+);

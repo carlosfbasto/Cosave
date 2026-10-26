@@ -128,8 +128,8 @@ function ModalBody({ initial, onClose }: { initial: SearchDraft; onClose: () => 
 
   const header = (
     <div className="border-b border-slate-100 pb-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-navy-light">Guardar mi búsqueda</p>
-      <h2 id="save-search-modal-title" className="mt-1 text-lg font-bold leading-snug text-navy">Te avisamos cuando lo encontremos</h2>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Guardar mi búsqueda</p>
+      <h2 id="save-search-modal-title" className="mt-1 text-lg font-bold leading-snug text-ink">Te avisamos cuando lo encontremos</h2>
       <p className="mt-1 text-xs text-slate-500">
         Guardaremos estos criterios de búsqueda y, cuando COSAVE tenga propiedades que coincidan, te lo notificaremos.
       </p>
@@ -141,11 +141,11 @@ function ModalBody({ initial, onClose }: { initial: SearchDraft; onClose: () => 
       <div className="space-y-5 p-6">
         {header}
         <div role="status" className="flex flex-col items-center gap-3 py-4 text-center">
-          <span className="grid h-14 w-14 place-items-center rounded-full bg-accent text-2xl font-bold text-navy">✓</span>
-          <p className="font-bold text-navy">¡Búsqueda guardada!</p>
+          <span className="grid h-14 w-14 place-items-center rounded-full bg-azure text-2xl font-bold text-white">✓</span>
+          <p className="font-bold text-ink">¡Búsqueda guardada!</p>
           <p className="text-sm text-slate-600">Te notificaremos cuando haya coincidencias. Puedes verla en «Mis búsquedas guardadas» de tu perfil.</p>
         </div>
-        <button type="button" onClick={onClose} className="w-full cursor-pointer rounded-md bg-accent px-4 py-2.5 font-semibold text-navy transition-colors hover:bg-accent-hover">
+        <button type="button" onClick={onClose} className="w-full cursor-pointer rounded-lg bg-ink px-4 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
           Cerrar
         </button>
       </div>
@@ -199,13 +199,13 @@ function ModalBody({ initial, onClose }: { initial: SearchDraft; onClose: () => 
       </div>
       {formError && <p role="alert" className="text-sm text-red-600">{formError}</p>}
       <div className="flex justify-end gap-3 pt-1">
-        <button type="button" onClick={onClose} className="cursor-pointer rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100">
+        <button type="button" onClick={onClose} className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100">
           Cancelar
         </button>
         <button
           type="submit"
           disabled={sending}
-          className="cursor-pointer rounded-md bg-accent px-5 py-2 text-sm font-semibold text-navy transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-lg bg-azure px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-azure-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {sending ? "Guardando…" : "Guardar búsqueda"}
         </button>
@@ -230,7 +230,7 @@ export function SaveSearchModal({ open, initial, onClose }: { open: boolean; ini
       onClose={onClose}
       onClick={(e) => e.target === e.currentTarget && onClose()}
       aria-labelledby="save-search-modal-title"
-      className="m-auto max-h-[92vh] w-[min(94vw,28rem)] overflow-x-hidden rounded-xl p-0 shadow-2xl backdrop:bg-navy/50"
+      className="m-auto max-h-[92vh] w-[min(94vw,28rem)] overflow-x-hidden rounded-xl p-0 shadow-veil backdrop:bg-ink/40 backdrop:backdrop-blur-sm"
     >
       {open && <ModalBody initial={initial} onClose={onClose} />}
     </dialog>

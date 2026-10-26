@@ -6,7 +6,7 @@ import { useNotifications } from "@/lib/notifications";
 import { formatDate } from "@/lib/mock-users";
 import { useDismiss } from "@/lib/use-dismiss";
 
-const iconCls = "grid h-9 w-9 place-items-center rounded-full text-white/85 transition-colors hover:bg-white/15 hover:text-white";
+const iconCls = "grid h-9 w-9 place-items-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 hover:text-ink";
 
 const Bell = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -28,7 +28,7 @@ export function NotificationsMenu({ userId }: { userId: string }) {
 
   const label = unread > 0 ? `Notificaciones (${unread} sin leer)` : "Notificaciones";
   const badge = unread > 0 && (
-    <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[0.65rem] font-bold text-navy">
+    <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-azure px-1 text-[0.65rem] font-bold text-white">
       {unread}
     </span>
   );
@@ -56,8 +56,8 @@ export function NotificationsMenu({ userId }: { userId: string }) {
         {badge}
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-30 mt-2 hidden w-80 overflow-hidden rounded-md bg-white shadow-xl ring-1 ring-slate-200 md:block">
-          <p className="border-b border-slate-100 px-4 py-2.5 text-sm font-bold text-navy">
+        <div role="menu" className="absolute right-0 top-full z-30 mt-2 hidden w-80 overflow-hidden rounded-lg bg-white shadow-veil ring-1 ring-slate-200 md:block">
+          <p className="border-b border-slate-100 px-4 py-2.5 text-sm font-bold text-ink">
             Notificaciones{unread > 0 && <span className="ml-2 text-xs font-normal text-slate-500">{unread} sin leer</span>}
           </p>
           {items.length === 0 ? (
@@ -75,9 +75,9 @@ export function NotificationsMenu({ userId }: { userId: string }) {
                     }}
                     className="flex gap-3 px-4 py-3 transition-colors hover:bg-slate-100"
                   >
-                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-accent"}`} aria-label={n.read ? "Leída" : "Sin leer"} />
+                    <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-azure"}`} aria-label={n.read ? "Leída" : "Sin leer"} />
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-navy">{n.title}</span>
+                      <span className="block truncate text-sm font-semibold text-ink">{n.title}</span>
                       <span className="line-clamp-2 text-xs text-slate-600">{n.body}</span>
                       <span className="mt-0.5 block text-[0.7rem] text-slate-500">{formatDate(n.createdAt)}</span>
                     </span>
@@ -90,7 +90,7 @@ export function NotificationsMenu({ userId }: { userId: string }) {
             href={allHref}
             role="menuitem"
             onClick={() => setOpen(false)}
-            className="block border-t border-slate-100 px-4 py-3 text-center text-sm font-semibold text-navy transition-colors hover:bg-slate-100"
+            className="block border-t border-slate-100 px-4 py-3 text-center text-sm font-semibold text-ink transition-colors hover:bg-slate-100"
           >
             Ver todas las notificaciones
           </Link>

@@ -52,7 +52,7 @@ export default function SavedSearchesPage({ params }: PageProps<"/profile/[id]/b
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-6 py-10">
       <header>
-        <h1 className="text-[20px] font-semibold text-navy">Mis búsquedas guardadas</h1>
+        <h1 className="text-[20px] font-semibold text-ink">Mis búsquedas guardadas</h1>
         <p className="mt-1 text-sm text-slate-600">Te notificaremos cuando COSAVE tenga propiedades que coincidan con estas búsquedas.</p>
       </header>
 
@@ -63,23 +63,23 @@ export default function SavedSearchesPage({ params }: PageProps<"/profile/[id]/b
       ) : items.length === 0 ? (
         <div className="py-10 text-center">
           <p className="mb-4 text-sm text-slate-600">Aún no has guardado búsquedas.</p>
-          <Link href="/properties" className="inline-block rounded-md bg-accent px-5 py-2.5 font-semibold text-navy transition-colors hover:bg-accent-hover">
+          <Link href="/properties" className="inline-block rounded-lg bg-ink px-5 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
             Explorar propiedades
           </Link>
         </div>
       ) : (
         <ul className="space-y-3">
           {items.map((s) => (
-            <li key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <li key={s.id} className="rounded-xl border border-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-semibold text-navy">
+                <p className="font-semibold text-ink">
                   {s.propertyType ? PROPERTY_TYPE_LABEL[s.propertyType] : "Cualquier tipo"} en {s.operation === "rent" ? "renta" : "venta"}
                 </p>
                 <span>
                   <button
                     type="button"
                     onClick={() => setToDelete(s)}
-                    className="cursor-pointer rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:border-red-600 hover:bg-red-50"
+                    className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:border-red-600 hover:bg-red-50"
                   >
                     Eliminar
                   </button>

@@ -50,7 +50,7 @@ export function ProfileHeader({ user }: { user: { id: string; fullName: string; 
             onClick={() => input.current?.click()}
             aria-label="Cambiar foto de perfil"
             style={{ width: SIZE, height: SIZE }}
-            className="group relative shrink-0 cursor-pointer overflow-hidden rounded-full border-4 border-white shadow-md"
+            className="group relative shrink-0 cursor-pointer overflow-hidden rounded-full border-4 border-white shadow-glow"
           >
             {img}
             <span className="absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
@@ -72,12 +72,12 @@ export function ProfileHeader({ user }: { user: { id: string; fullName: string; 
           />
         </>
       ) : (
-        <div style={{ width: SIZE, height: SIZE }} className="shrink-0 overflow-hidden rounded-full border-4 border-white shadow-md">
+        <div style={{ width: SIZE, height: SIZE }} className="shrink-0 overflow-hidden rounded-full border-4 border-white shadow-glow">
           {img}
         </div>
       )}
       <div className="min-w-0">
-        <h1 className="truncate text-[20px] font-semibold text-navy">{user.fullName}</h1>
+        <h1 className="truncate text-[20px] font-semibold text-ink">{user.fullName}</h1>
         {isOwner && <p className="truncate text-[16px] font-normal text-slate-600">{user.email}</p>}
       </div>
       {pending && <PhotoCropper key={`${pending.name}-${pending.lastModified}`} file={pending} onSave={onSave} onCancel={() => setPending(null)} />}

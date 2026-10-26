@@ -14,9 +14,9 @@ const badge = "rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold tex
 function InquiryRow({ i, children }: { i: InquiryItem; children?: React.ReactNode }) {
   const off = i.property.status === "published" ? null : (UNAVAILABLE_LABEL[i.property.status] ?? "Retirada");
   return (
-    <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <li className="rounded-xl border border-slate-200 bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Link href={`/properties/${i.property.code}`} className="font-semibold text-navy transition-colors hover:text-accent-hover">
+        <Link href={`/properties/${i.property.code}`} className="font-semibold text-ink transition-colors hover:text-azure-hover">
           {i.property.title}
         </Link>
         <span className="flex gap-2">
@@ -48,7 +48,7 @@ export default function OrdersPage({ params }: PageProps<"/profile/[id]/pedidos"
   return (
     <main className="mx-auto max-w-4xl space-y-6 px-6 py-10">
       <header>
-        <h1 className="text-[20px] font-semibold text-navy">Mis consultas</h1>
+        <h1 className="text-[20px] font-semibold text-ink">Mis consultas</h1>
         <p className="mt-1 text-sm text-slate-600">Las consultas que has enviado a anunciantes. Quedan pendientes hasta que respondan.</p>
       </header>
 
@@ -59,7 +59,7 @@ export default function OrdersPage({ params }: PageProps<"/profile/[id]/pedidos"
       ) : mine.items.length === 0 ? (
         <div className="py-10 text-center">
           <p className="mb-4 text-sm text-slate-600">Aún no has enviado consultas.</p>
-          <Link href="/properties" className="inline-block rounded-md bg-accent px-5 py-2.5 font-semibold text-navy transition-colors hover:bg-accent-hover">
+          <Link href="/properties" className="inline-block rounded-lg bg-ink px-5 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
             Explorar propiedades
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default function OrdersPage({ params }: PageProps<"/profile/[id]/pedidos"
 
       {received.length > 0 && (
         <section className="space-y-3 pt-4">
-          <h2 className="text-[17px] font-semibold text-navy">Consultas recibidas</h2>
+          <h2 className="text-[17px] font-semibold text-ink">Consultas recibidas</h2>
           <ul className="space-y-3">
             {received.map((i) => (
               <InquiryRow key={i.id} i={i}>

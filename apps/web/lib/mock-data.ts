@@ -37,10 +37,10 @@ export const steps = [
 ];
 
 export const trustStats = [
-  { value: "+2,700", label: "Propiedades publicadas" },
-  { value: "+15,000", label: "Usuarios registrados" },
-  { value: "+1,200", label: "Alertas cumplidas" },
-  { value: "4.8/5", label: "Satisfacción promedio" },
+  { value: "+2,700", label: "Propiedades publicadas", detail: "Casas, departamentos, terrenos y bodegas" },
+  { value: "+15,000", label: "Usuarios registrados", detail: "Compradores, propietarios y asesores" },
+  { value: "+1,200", label: "Alertas cumplidas", detail: "Coincidencias avisadas a tiempo" },
+  { value: "4.8/5", label: "Satisfacción promedio", detail: "Calificación de nuestros usuarios" },
 ];
 
 export const testimonials = [

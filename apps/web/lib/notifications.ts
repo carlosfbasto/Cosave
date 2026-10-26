@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
+import { api, apiRaw } from "./api";
+import { useSession } from "./auth";
 import { getMockUser } from "./mock-users";
 
 /**
- * Notificaciones DEMO por usuario (localStorage, una clave por usuario).
- * Equivalen a la tabla `Notification`; allí falta un campo de lectura (`readAt`) que habrá que
- * añadir con una migración al conectar el api. Se reemplazará por `GET /notifications` (Etapa 5).
+ * Notificaciones por usuario (campana del header). Dos modos, con la misma interfaz:
+ *  - Cuenta real (Supabase): avisos `in_app` del api (`/notifications`), p. ej. coincidencias de búsquedas guardadas.
+ *  - Usuario demo: localStorage, una clave por usuario, con avisos de ejemplo.
  */
 export interface AppNotification {
   id: string;
@@ -18,6 +20,8 @@ export interface AppNotification {
   /** Si el aviso es por una coincidencia, la propiedad encontrada. */
   propertyCode?: string;
 }
+
+/* ---------- Modo demo: localStorage ---------- */
 
 const key = (userId: string) => `cosave:notifications:${userId}`;
 const EVENT = "cosave:notifications-change";
@@ -69,17 +73,92 @@ function parse(raw: string | null, userId: string): AppNotification[] {
   return seed(userId);
 }
 
+/* ---------- Modo cuenta real: almacén compartido (campana y página leen la misma carga) ---------- */
+
+interface RemoteNotification {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  read: boolean;
+  propertyCode: string | null;
+}
+
+interface RemoteState {
+  userId: string | null;
+  items: AppNotification[];
+}
+
+let remote: RemoteState = { userId: null, items: [] };
+const remoteListeners = new Set<() => void>();
+let loading: string | null = null;
+
+function setRemote(next: RemoteState) {
+  remote = next;
+  remoteListeners.forEach((l) => l());
+}
+
+function subscribeRemote(cb: () => void) {
+  remoteListeners.add(cb);
+  return () => void remoteListeners.delete(cb);
+}
+
+const fromApi = (n: RemoteNotification): AppNotification => ({
+  id: n.id,
+  kind: n.propertyCode ? "match" : "system",
+  title: n.title,
+  body: n.body,
+  createdAt: n.createdAt.slice(0, 10),
+  read: n.read,
+  ...(n.propertyCode && { propertyCode: n.propertyCode }),
+});
+
+/** Carga (o recarga) los avisos de la cuenta. Sin conexión con el api deja la lista como estaba. */
+async function loadRemote(userId: string) {
+  if (loading === userId) return;
+  loading = userId;
+  try {
+    const { data } = await apiRaw<{ data: RemoteNotification[] }>("/notifications");
+    setRemote({ userId, items: data.map(fromApi) });
+  } catch {
+    if (remote.userId !== userId) setRemote({ userId, items: [] });
+  } finally {
+    loading = null;
+  }
+}
+
+/** Cambio optimista; si el api falla, se recarga la lista real. */
+function mutateRemote(userId: string, next: AppNotification[], call: () => Promise<unknown>) {
+  setRemote({ userId, items: next });
+  call().catch(() => loadRemote(userId));
+}
+
 /** Notificaciones de `userId` (null = sin sesión), más recientes primero. */
 export function useNotifications(userId: string | null) {
+  const { session } = useSession();
+  const isRemote = !!userId && session?.user.id === userId;
+
   const raw = useSyncExternalStore(
     subscribe,
-    () => (userId ? read(userId) : null),
+    () => (userId && !isRemote ? read(userId) : null),
     () => null,
   );
-  const items = useMemo(
-    () => (userId ? parse(raw, userId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : []),
-    [raw, userId],
-  );
+  const remoteState = useSyncExternalStore(subscribeRemote, () => remote, () => remote);
+
+  // Cuenta real: carga al entrar y al volver a la pestaña (por si llegó una coincidencia nueva).
+  useEffect(() => {
+    if (!isRemote || !userId) return;
+    void loadRemote(userId);
+    const onFocus = () => void loadRemote(userId);
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [isRemote, userId]);
+
+  const items = useMemo(() => {
+    if (!userId) return [];
+    const list = isRemote ? (remoteState.userId === userId ? remoteState.items : []) : parse(raw, userId);
+    return [...list].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [raw, remoteState, userId, isRemote]);
 
   const save = useCallback(
     (next: AppNotification[]) => {
@@ -94,11 +173,21 @@ export function useNotifications(userId: string | null) {
     [userId],
   );
 
-  return {
-    items,
-    unread: items.filter((n) => !n.read).length,
-    markRead: (id: string) => save(items.map((n) => (n.id === id ? { ...n, read: true } : n))),
-    markAllRead: () => save(items.map((n) => ({ ...n, read: true }))),
-    remove: (id: string) => save(items.filter((n) => n.id !== id)),
+  const markRead = (id: string) => {
+    const next = items.map((n) => (n.id === id ? { ...n, read: true } : n));
+    if (!isRemote) return save(next);
+    mutateRemote(userId, next, () => api(`/notifications/${id}/read`, { method: "PATCH" }));
   };
+  const markAllRead = () => {
+    const next = items.map((n) => ({ ...n, read: true }));
+    if (!isRemote) return save(next);
+    mutateRemote(userId, next, () => api("/notifications/read-all", { method: "POST" }));
+  };
+  const remove = (id: string) => {
+    const next = items.filter((n) => n.id !== id);
+    if (!isRemote) return save(next);
+    mutateRemote(userId, next, () => api(`/notifications/${id}`, { method: "DELETE" }));
+  };
+
+  return { items, unread: items.filter((n) => !n.read).length, markRead, markAllRead, remove };
 }

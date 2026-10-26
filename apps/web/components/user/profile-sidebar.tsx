@@ -75,7 +75,7 @@ export function ProfileSidebar({ userId }: { userId: string }) {
               <Link
                 href={l.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-3 whitespace-nowrap rounded-md px-3 py-2.5 text-[13px] text-[#666] transition-colors hover:bg-slate-100 ${active ? "bg-slate-100 font-semibold" : ""}`}
+                className={`flex items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2.5 text-[13px] text-slate-500 transition-colors hover:bg-slate-100 ${active ? "bg-slate-100 font-semibold" : ""}`}
               >
                 {l.icon}
                 {isOwner && l.label === "Publicados" ? "Mis propiedades" : l.label}

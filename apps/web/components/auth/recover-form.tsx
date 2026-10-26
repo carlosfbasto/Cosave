@@ -44,7 +44,7 @@ export function RecoverForm() {
       {sent ? (
         <div className="space-y-4">
           <Banner tone="success">Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada.</Banner>
-          <button type="button" onClick={() => setSent(false)} className="cursor-pointer text-sm font-semibold text-navy underline">
+          <button type="button" onClick={() => setSent(false)} className="cursor-pointer text-sm font-semibold text-ink underline">
             Usar otro correo
           </button>
         </div>
