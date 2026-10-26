@@ -37,6 +37,8 @@ const protectedRoutes: [string, string][] = [
   ["POST", "/api/v1/notifications/read-all"],
   ["GET", "/api/v1/me/properties"],
   ["GET", "/api/v1/admin/users"],
+  ["GET", "/api/v1/admin/audit"],
+  ["PATCH", "/api/v1/admin/users/00000000-0000-0000-0000-000000000000/role"],
   ["POST", "/api/v1/admin/properties/00000000-0000-0000-0000-000000000000/review"],
 ];
 

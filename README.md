@@ -152,7 +152,7 @@ Contrastado con el *Documento Técnico-Funcional y Modelo de Negocio* (secciones
 | Etapa | Qué se hace | Estado |
 |---|---|---|
 | **Fase 0** | Arquitectura, planos, stack | ✅ Completa |
-| **Etapa 1** | Base de datos, usuarios, roles, admin | 🔄 Migraciones aplicadas en Supabase; usuarios, roles y panel admin funcionando. Falta: registro de acciones importantes (auditoría) y respaldos |
+| **Etapa 1** | Base de datos, usuarios, roles, admin | 🔄 Migraciones aplicadas en Supabase; usuarios, roles, panel admin y bitácora de auditoría (`AuditLog`) funcionando. Falta: respaldos y su pantalla en el panel admin |
 | **Etapa 2** | Publicar propiedades, fotos, revisión | 🔄 Publicar, fotos, revisión, Mis propiedades, panel admin, estados y aviso de duplicados; bucket `property-images` creado. Falta: probar la subida de fotos de punta a punta, videos / recorridos virtuales, tipos *local, oficina, bodega, rancho* y amenidades |
 | **Etapa 3** | Buscador, filtros, resultados, mapa | 🔄 Listado, ficha, portada y mapa leen del api; falta paginar/filtrar en el servidor (hoy el catálogo carga hasta 500), filtrar por zona/estado/características y por el área visible del mapa |
 | **Etapa 4** | Favoritos, comparador, contacto | 🔄 Favoritos y consultas funcionando. **Falta el comparador** |

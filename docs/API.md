@@ -21,7 +21,8 @@ Respuestas exitosas: `{ "data": ..., "meta": ... }`. Error de validación: 422 c
 |---|---|---|
 | 1 ✅ | `GET /me` · `PATCH /me` | Perfil propio (`fullName`, `phone`). El Profile se crea solo en el primer acceso |
 | 1 ✅ | `GET /admin/users?page&pageSize&role&q` | Listar usuarios (solo admin) |
-| 1 ✅ | `PATCH /admin/users/:id/role` | Cambiar rol (solo admin; no el propio) |
+| 1 ✅ | `PATCH /admin/users/:id/role` | Cambiar rol (solo admin; no el propio). Queda en la bitácora |
+| 1 ✅ | `GET /admin/audit?entityType&entityId&actorId&action&page&pageSize` | Bitácora de acciones (solo admin), más recientes primero, con `actor` (nombre y correo) |
 | 2 ✅ | `GET /me/properties` · `POST /me/properties` · `GET/PATCH /me/properties/:id` | Mis propiedades (todos los estados). Crear exige solo `operation` y `type`: un borrador puede estar incompleto. Una ajena responde 404. Editar según estado: borrador/rechazada todo; publicada/pausada solo precio, descripción y características (409 `limited`); pendiente/vendida/rentada/retirada nada (409 `locked`) |
 | 2 ✅ | `POST /me/properties/:id/submit` | Envía a revisión; valida lo obligatorio y exige ≥1 foto (422 `incomplete`). Con coincidencias responde 409 `possible_duplicate` + `details.codes`; se reenvía con `{ confirmDuplicate: true }`. Nunca borra nada |
 | 2 ✅ | `POST /me/properties/:id/status` | `{ to }`: pausar, reactivar, `sold`/`rented`, `archived`, `draft`. Solo transiciones válidas (409 `invalid_transition`) |

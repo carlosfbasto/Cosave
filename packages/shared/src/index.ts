@@ -214,3 +214,21 @@ export const inquiryInputSchema = z.object({
 });
 
 export type InquiryInput = z.infer<typeof inquiryInputSchema>;
+
+/** Acciones que quedan en la bitácora de auditoría (`AuditLog.action`). */
+export const AUDIT_ACTIONS = [
+  "user.role_changed",
+  "property.reviewed",
+  "property.archived_by_admin",
+  "property.image_deleted",
+  "property.edited",
+] as const;
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+
+export const AUDIT_ACTION_LABEL: Record<AuditAction, string> = {
+  "user.role_changed": "Cambio de rol",
+  "property.reviewed": "Revisión de publicación",
+  "property.archived_by_admin": "Publicación retirada por COSAVE",
+  "property.image_deleted": "Foto eliminada",
+  "property.edited": "Edición de propiedad publicada",
+};
