@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FavoriteButton } from "@/components/favorite-button";
+import { StatIcon } from "@/components/property-icons";
 import { formatMxn, type MockProperty } from "@/lib/mock-data";
-
-const iconCls = "h-4 w-4 text-slate-500";
 
 function Stat({ children, label, small }: { children: React.ReactNode; label: string; small?: boolean }) {
   return (
@@ -68,15 +67,15 @@ export function PropertyCard({ p, smallStats = false }: { p: MockProperty; small
         <p className="line-clamp-2 text-[0.9rem] leading-snug text-slate-600">{p.description}</p>
         <div className={`mt-auto flex items-center gap-4 border-t border-slate-100 pt-3 font-normal text-slate-700 ${smallStats ? "text-[0.6rem]" : "text-[0.8rem]"}`}>
           <Stat label="Recámaras" small={smallStats}>
-            <svg viewBox="0 0 24 24" className={iconCls} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M3 18v-7a2 2 0 012-2h14a2 2 0 012 2v7M3 15h18M7 9V6h10v3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <StatIcon name="bed" />
             {p.bedrooms} recámaras
           </Stat>
           <Stat label="Baños" small={smallStats}>
-            <svg viewBox="0 0 24 24" className={iconCls} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M3 12h18v2a5 5 0 01-5 5H8a5 5 0 01-5-5v-2zM6 12V6a2 2 0 014 0" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <StatIcon name="bath" />
             {p.bathrooms} baños
           </Stat>
           <Stat label="Superficie" small={smallStats}>
-            <svg viewBox="0 0 24 24" className={iconCls} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M4 4h16v16H4zM4 9h5M9 4v5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <StatIcon name="area" />
             {p.area} m²
           </Stat>
         </div>
@@ -86,9 +85,10 @@ export function PropertyCard({ p, smallStats = false }: { p: MockProperty; small
 }
 
 /** `compact`: cards 15 px más angostas que la columna (lista del módulo de propiedades). */
-export function PropertyGrid({ items, cols = 4, compact = false, smallStats = false }: { items: MockProperty[]; cols?: 2 | 4; compact?: boolean; smallStats?: boolean }) {
+export function PropertyGrid({ items, cols = 4, compact = false, smallStats = false }: { items: MockProperty[]; cols?: 2 | 3 | 4; compact?: boolean; smallStats?: boolean }) {
+  const xl = cols === 4 ? "xl:grid-cols-4" : cols === 3 ? "lg:grid-cols-3" : "";
   return (
-    <div className={`grid gap-6 ${compact ? "sm:grid-cols-[repeat(2,calc((100%-24px)/2-15px))]" : "sm:grid-cols-2"} ${cols === 4 ? "xl:grid-cols-4" : ""}`}>
+    <div className={`grid gap-6 ${compact ? "sm:grid-cols-[repeat(2,calc((100%-24px)/2-15px))]" : "sm:grid-cols-2"} ${xl}`}>
       {items.map((p) => (
         <PropertyCard key={p.code} p={p} smallStats={smallStats} />
       ))}
