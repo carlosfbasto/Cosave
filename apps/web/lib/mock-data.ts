@@ -1,4 +1,5 @@
 /** Datos FICTICIOS solo para diseñar la portada. Se reemplazarán por datos del api (Etapa 3). */
+import { amenitiesFor, type Amenity, type Material, type PropertyType as DbType } from "@cosave/shared";
 
 export interface MockProperty {
   code: string;
@@ -55,6 +56,17 @@ export const formatMxn = (n: number) =>
 /* ---------- Módulo /properties (datos ficticios) ---------- */
 
 export type PropertyType = "Bodega Comercial" | "Bodega Industrial" | "Casa" | "Departamento" | "Terreno" | "Local comercial" | "Otro";
+
+/** Tipo del listado → tipo de la BD (`PropertyType` de packages/shared). */
+export const DB_TYPE: Record<PropertyType, DbType> = {
+  Casa: "house",
+  Departamento: "apartment",
+  Terreno: "land",
+  "Local comercial": "commercial",
+  "Bodega Comercial": "commercial_warehouse",
+  "Bodega Industrial": "industrial_warehouse",
+  Otro: "other",
+};
 export const cities = ["Panabá", "Tizimín", "Valladolid", "Mérida"] as const;
 export const types: PropertyType[] = ["Bodega Comercial", "Bodega Industrial", "Casa", "Departamento"];
 
@@ -70,11 +82,16 @@ export interface ListedProperty extends MockProperty {
   longitude?: number | null;
   postalCode?: string | null;
   parkingSpots?: number | null;
+  /** Cuota mensual de mantenimiento (MXN), si aplica. */
+  maintenanceFee?: number | null;
   state: string;
   zone: string;
+  /** Claves de AMENITIES y MATERIALS (packages/shared). */
+  amenities: Amenity[];
+  materials: Material[];
 }
 
-type ListedCore = Omit<ListedProperty, "state" | "zone">;
+type ListedCore = Omit<ListedProperty, "state" | "zone" | "amenities" | "materials">;
 
 const extra: Record<string, Pick<ListedCore, "type" | "landArea" | "publishedAt" | "map">> = {
   "COS-000001": { type: "Casa", landArea: 450, publishedAt: "2026-10-01", map: { x: 22, y: 30 } },
@@ -104,10 +121,46 @@ const zoneByCode: Record<string, string> = {
   "COS-000012": "Sur", "COS-000013": "Zona industrial", "COS-000014": "Norte",
 };
 
+/** Palabras de la descripción → característica que menciona. */
+const AMENITY_WORDS: [RegExp, Amenity][] = [
+  [/alberca/i, "pool"],
+  [/jard[ií]n/i, "garden"],
+  [/terraza/i, "terrace"],
+  [/palapa/i, "palapa"],
+  [/cuarto de servicio/i, "service_room"],
+  [/amueblado/i, "furnished"],
+  [/seguridad|vigilancia/i, "security"],
+  [/[áa]reas verdes/i, "green_areas"],
+  [/balc[óo]n/i, "balcony"],
+  [/fraccionamiento cerrado|privada/i, "gated"],
+  [/cochera/i, "covered_garage"],
+  [/and[ée]n/i, "loading_dock"],
+  [/oficinas/i, "offices"],
+  [/patio de maniobras/i, "maneuver_yard"],
+  [/tr[áa]ileres/i, "trailer_access"],
+  [/subestaci[óo]n/i, "substation"],
+  [/avenida/i, "avenue_front"],
+];
+
+/** Características de una propiedad de ejemplo: las básicas de su tipo + las que menciona su descripción. */
+function demoAmenities(p: ListedCore): Amenity[] {
+  const industrial = p.type.startsWith("Bodega");
+  const base: Amenity[] = industrial ? ["water_drainage", "three_phase"] : ["kitchen", "water_drainage"];
+  const text = `${p.title} ${p.description}`;
+  const found = AMENITY_WORDS.filter(([re]) => re.test(text)).map(([, a]) => a);
+  const allowed = amenitiesFor(DB_TYPE[p.type]);
+  return [...new Set([...base, ...found])].filter((a) => allowed.includes(a));
+}
+
+const demoMaterials = (p: ListedCore): Material[] =>
+  p.type.startsWith("Bodega")
+    ? ["steel_structure", "block_concrete", "galvanized_roof", "concrete_floor", "polished_concrete_floor"]
+    : ["block_concrete", "vigueta_bovedilla", "porcelain_floor", "aluminum_windows"];
+
 export const listedProperties: ListedProperty[] = [
   ...allMockProperties.map((p) => ({ ...p, ...extra[p.code] })),
   ...more,
-].map((p) => ({ ...p, state: "Yucatán", zone: zoneByCode[p.code] ?? "Centro" }));
+].map((p) => ({ ...p, state: "Yucatán", zone: zoneByCode[p.code] ?? "Centro", amenities: demoAmenities(p), materials: demoMaterials(p) }));
 
 export const states = ["Yucatán"] as const;
 export const zones = ["Centro", "Norte", "Sur", "Oriente", "Zona industrial"] as const;
@@ -158,22 +211,15 @@ export const cityCoords: Record<string, { lat: number; lon: number }> = {
   Panabá: { lat: 21.2917, lon: -88.2689 },
 };
 
-export function detailsFor(p: ListedProperty) {
+/** Descripción larga de una propiedad de ejemplo. */
+export function paragraphsFor(p: ListedProperty): string[] {
   const industrial = p.type.startsWith("Bodega");
-  return {
-    paragraphs: [
-      `${p.title} es una propiedad ${p.operation === "rent" ? "en renta" : "en venta"} ubicada en ${p.city}, Yucatán. ${p.description}`,
-      industrial
-        ? "Cuenta con estructura metálica, piso de concreto pulido de alta resistencia, buena iluminación natural y accesos amplios para vehículos de carga."
-        : "Cuenta con espacios amplios y bien ventilados, acabados de calidad y una distribución pensada para la comodidad de la familia.",
-    ],
-    features: industrial
-      ? ["Andén de carga", "Oficinas administrativas", "Piso de concreto pulido", "Instalación eléctrica trifásica", "Vigilancia 24 horas", "Patio de maniobras"]
-      : ["Cocina integral", "Cochera cubierta", "Pisos de porcelanato", "Ventanas de aluminio", "Agua potable y drenaje", "Áreas verdes"],
-    materials: industrial
-      ? ["Estructura de acero", "Muros de block y concreto", "Techo de lámina galvanizada", "Piso de concreto armado"]
-      : ["Muros de block y concreto", "Losa de vigueta y bovedilla", "Piso de porcelanato", "Cancelería de aluminio"],
-  };
+  return [
+    `${p.title} es una propiedad ${p.operation === "rent" ? "en renta" : "en venta"} ubicada en ${p.city}, Yucatán. ${p.description}`,
+    industrial
+      ? "Cuenta con estructura metálica, piso de concreto pulido de alta resistencia, buena iluminación natural y accesos amplios para vehículos de carga."
+      : "Cuenta con espacios amplios y bien ventilados, acabados de calidad y una distribución pensada para la comodidad de la familia.",
+  ];
 }
 
 /** Propiedades similares: mismo tipo y operación primero, luego misma ciudad, luego el resto. */

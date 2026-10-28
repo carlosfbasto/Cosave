@@ -4,6 +4,7 @@ import { favoritesRouter } from "./favorites.js";
 import { inquiriesRouter } from "./inquiries.js";
 import { meRouter } from "./me.js";
 import { notificationsRouter } from "./notifications.js";
+import { postalCodesRouter } from "./postalCodes.js";
 import { propertiesRouter } from "./properties.js";
 import { savedSearchesRouter } from "./savedSearches.js";
 
@@ -13,6 +14,7 @@ export const apiRouter = Router();
 apiRouter.use("/me", meRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/properties", propertiesRouter); // público
+apiRouter.use("/postal-codes", postalCodesRouter); // público
 apiRouter.use("/favorites", favoritesRouter);
 apiRouter.use("/inquiries", inquiriesRouter);
 apiRouter.use("/saved-searches", savedSearchesRouter);

@@ -237,3 +237,13 @@ Basado en el diseño de Stitch «Explorador y resultados con mapa», adaptado a 
 - **Mapa**: pines de precio `ink`, `azure` al resaltar; pasar sobre una tarjeta resalta su pin y abrir un pin marca su tarjeta.
 - **Paginación**: 12 por página (parámetro `pagina`); el mapa muestra todos los resultados.
 - **Omitido del diseño por no tener datos reales**: sellos de auditoría y eficiencia energética, alerta de mercado, bajadas de precio, «sin comisión», rendimiento de inversión, capas de metro/colegios/precio por zona, orden por «relevancia» y amenidades (terraza, planta…).
+
+## Publicar propiedad (`/vender`) — nota COSAVE
+
+Adaptado del diseño de Stitch «Publicar inmueble», solo con datos que COSAVE captura.
+
+- **Encabezado:** volver, clave y estado de la publicación, indicador real de guardado («Cambios sin guardar» / «Todo guardado») y «Guardar borrador y salir». Los 3 pasos van en tarjetas (Datos y ubicación → Fotografías → Vista previa); los completados llevan palomita.
+- **Paso 1:** formulario (7 columnas) y ubicación con mapa Leaflet (5 columnas; se desplaza con la página, no queda fija). Operación en botones segmentados, tipo en mosaicos con ícono, contador de caracteres, precio con `$ … MXN` y precio por m² en vivo, superficies en mosaicos (solo las que aplican al tipo), características y materiales como chips. Mantenimiento mensual junto al precio solo en departamentos o si se marca «Privada o fraccionamiento cerrado». El código postal va primero: llena estado y ciudad (solo lectura) y la colonia se elige de una lista («Otra» permite escribirla); el mapa encuadra el municipio del código (salvo que la marca ya esté dentro). Mapas de `/vender` y `/properties` con gestos controlados (`components/map-gestures.ts` + `map-gesture-hint.tsx`): con mouse la rueda desplaza la página y el zoom es con Ctrl/⌘ + rueda; en pantallas táctiles un dedo desliza la página y el mapa se mueve con dos. Un aviso explica el gesto.
+- **Paso 2:** zona para arrastrar fotos o elegirlas (la nitidez se revisa en el navegador antes de subir y otra vez en el api; una borrosa muestra «No se pudo cargar … : la foto se ve borrosa…» con cómo corregirlo), «Foto portada», «Hacer portada» y «Quitar».
+- **Paso 3:** vista previa de la tarjeta y lista «Antes de enviar» con lo obligatorio y lo opcional.
+- **Omitido del diseño (sin datos o falso):** NOM-247, certeza notarial, Folio Real / RPPC, clave catastral, certificado de libertad de gravamen, asesor notarial, «+43 % de ofertas», guardado automático, renta temporal, penthouse/oficina, nivel de piso, vista satélite, lugares cercanos, % de nitidez visible, girar fotos, planos PDF y reordenar arrastrando.

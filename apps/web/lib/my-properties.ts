@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { OperationType, PropertyPatch, PropertyStatus, PropertyType } from "@cosave/shared";
+import type { Amenity, Material, OperationType, PostalCodeInfo, PropertyPatch, PropertyStatus, PropertyType } from "@cosave/shared";
 import { api } from "./api";
 
 /** Mi propiedad tal como la entrega `GET /me/properties` (todos los estados). */
@@ -14,6 +14,7 @@ export interface MyProperty {
   title: string;
   description: string | null;
   price: number;
+  maintenanceFee: number | null;
   state: string;
   city: string;
   zone: string | null;
@@ -26,6 +27,8 @@ export interface MyProperty {
   parkingSpots: number | null;
   landAreaM2: number | null;
   builtAreaM2: number | null;
+  amenities: Amenity[];
+  materials: Material[];
   reviewNote: string | null;
   submittedAt: string | null;
   publishedAt: string | null;
@@ -37,6 +40,10 @@ export interface MyProperty {
 }
 
 const json = (body: unknown) => JSON.stringify(body);
+
+/** Estado, ciudad y colonias de un código postal (catálogo del api). */
+// `no-cache`: el navegador siempre confirma con el api (evita respuestas guardadas con un formato anterior).
+export const postalCodeInfo = (code: string) => api<PostalCodeInfo>(`/postal-codes/${code}`, { cache: "no-cache" });
 
 export const mineApi = {
   list: () => api<MyProperty[]>("/me/properties"),

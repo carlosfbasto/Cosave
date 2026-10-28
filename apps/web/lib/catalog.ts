@@ -1,5 +1,5 @@
-import type { OperationType, PropertyStatus, PropertyType as DbType } from "@cosave/shared";
-import { listedProperties, type ListedProperty, type PropertyType } from "./mock-data";
+import type { Amenity, Material, OperationType, PropertyStatus, PropertyType as DbType } from "@cosave/shared";
+import { DB_TYPE, listedProperties, type ListedProperty, type PropertyType } from "./mock-data";
 
 /**
  * Catálogo público desde el api (`GET /properties/catalog` y `GET /properties/:code`).
@@ -12,6 +12,7 @@ export interface ApiProperty {
   type: DbType;
   operation: OperationType;
   price: number;
+  maintenanceFee?: number | null;
   state: string;
   city: string;
   zone: string | null;
@@ -23,19 +24,16 @@ export interface ApiProperty {
   parkingSpots: number | null;
   landAreaM2: number | null;
   builtAreaM2: number | null;
+  amenities?: Amenity[];
+  materials?: Material[];
   status: PropertyStatus;
   publishedAt: string;
   images: string[];
   advertiser?: { fullName: string; memberSince: string };
 }
 
-const TYPE_LABEL: Record<DbType, PropertyType> = {
-  house: "Casa",
-  apartment: "Departamento",
-  land: "Terreno",
-  commercial: "Local comercial",
-  other: "Otro",
-};
+/** Tipo de la BD → etiqueta del listado. */
+const TYPE_LABEL = Object.fromEntries(Object.entries(DB_TYPE).map(([label, db]) => [db, label])) as Record<DbType, PropertyType>;
 export const PLACEHOLDER_IMAGE = "/img/casa-blanca.jpg";
 
 const API = () => `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3300"}/api/v1`;
@@ -63,6 +61,9 @@ export function toListed(a: ApiProperty): ListedProperty {
     longitude: a.longitude,
     postalCode: a.postalCode,
     parkingSpots: a.parkingSpots,
+    maintenanceFee: a.maintenanceFee ?? null,
+    amenities: a.amenities ?? [],
+    materials: a.materials ?? [],
   };
 }
 

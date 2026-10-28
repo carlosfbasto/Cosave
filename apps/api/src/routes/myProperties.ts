@@ -2,6 +2,7 @@ import { Router, raw } from "express";
 import { z } from "zod";
 import {
   allowedTransitions,
+  BLURRY_IMAGE_MESSAGE,
   editScope,
   IMAGE_LABEL,
   IMAGE_LIMITS,
@@ -13,9 +14,10 @@ import {
 } from "@cosave/shared";
 import { auditCreate, changedFields } from "../lib/audit.js";
 import { handler, HttpError } from "../lib/errors.js";
+import { MIN_SHARPNESS, sharpness } from "../lib/image-quality.js";
 import { EXTENSION, sniffImage } from "../lib/magic.js";
 import { prisma } from "../lib/prisma.js";
-import { assertComplete, currentValues, moveStatus, nextPublicCode, ownedProperty, submit, writeData } from "../lib/property-service.js";
+import { assertComplete, currentValues, moveStatus, nextPublicCode, ownedProperty, submit, withPostalCode, writeData } from "../lib/property-service.js";
 import { ownerView, propertyInclude } from "../lib/property-view.js";
 import { removeImage, uploadImage } from "../lib/storage.js";
 
@@ -52,8 +54,8 @@ myPropertiesRouter.get(
 myPropertiesRouter.post(
   "/",
   handler(async (req, res) => {
-    const input = propertyCreateSchema.parse(req.body);
-    const { location, features } = writeData(input, input.type);
+    const input = await withPostalCode(propertyCreateSchema.parse(req.body));
+    const { property, location, features } = writeData(input, input.type);
     const id = await prisma.$transaction(async (tx) => {
       const created = await tx.property.create({
         data: {
@@ -63,6 +65,7 @@ myPropertiesRouter.post(
           title: input.title ?? "",
           description: input.description ?? null,
           price: input.price ?? 0,
+          maintenanceFee: property.maintenanceFee as number | null | undefined,
           ownerId: req.user!.id,
           status: "draft",
           location: { create: { state: input.state ?? "", city: input.city ?? "", ...location } },
@@ -90,8 +93,15 @@ myPropertiesRouter.patch(
   "/:id",
   handler(async (req, res) => {
     const { id } = idParam.parse(req.params);
-    const patch = propertyPatchSchema.parse(req.body);
     const p = await ownedProperty(id, req.user!.id);
+    const parsed = propertyPatchSchema.parse(req.body);
+    // Estado y ciudad salen del código postal: si cambió se vuelven a tomar del catálogo; si no, se conservan los guardados.
+    const patch =
+      parsed.postalCode && parsed.postalCode !== p.location?.postalCode
+        ? await withPostalCode(parsed)
+        : p.location?.postalCode
+          ? { ...parsed, state: undefined, city: undefined }
+          : parsed;
 
     const scope = editScope(p.status);
     if (scope === "locked") {
@@ -117,7 +127,7 @@ myPropertiesRouter.patch(
     }
 
     const type = patch.type ?? p.type;
-    const { property, location, features } = writeData(patch, type);
+    const { property, location, features } = writeData(patch, type, p.features?.amenities ?? []);
     // En una propiedad ya visible (publicada o pausada) cada cambio queda en la bitácora; un borrador no.
     const changes = scope === "limited" ? changedFields(currentValues(p), patch) : null;
     await prisma.$transaction([
@@ -189,6 +199,12 @@ myPropertiesRouter.post(
     if (!Buffer.isBuffer(body) || body.length === 0) throw new HttpError(422, "invalid_image", "No se recibió ninguna imagen.");
     const mime = sniffImage(body);
     if (!mime) throw new HttpError(422, "invalid_image", `Ese archivo no es una imagen permitida. Usa ${IMAGE_LABEL}.`);
+    const score = await sharpness(body).catch(() => null);
+    if (score === null) throw new HttpError(422, "invalid_image", "No pudimos leer esa imagen. Prueba con otra o vuelve a exportarla.");
+    if (score < MIN_SHARPNESS) {
+      const message = BLURRY_IMAGE_MESSAGE.charAt(0).toUpperCase() + BLURRY_IMAGE_MESSAGE.slice(1);
+      throw new HttpError(422, "blurry_image", message, { sharpness: Math.round(score) });
+    }
 
     const path = `${p.id}/${crypto.randomUUID()}.${EXTENSION[mime]}`;
     await uploadImage(path, body, mime);
