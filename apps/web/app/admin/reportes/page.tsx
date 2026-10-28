@@ -5,7 +5,15 @@ import { PageHeader } from "@/components/admin/admin-shell";
 import { ErrorNote, Loading, panel } from "@/components/admin/ui";
 import { useAdminData, type AdminStats } from "@/lib/admin";
 
-const TYPE: Record<string, string> = { house: "Casas", apartment: "Departamentos", land: "Terrenos", commercial: "Locales y bodegas", other: "Otros" };
+const TYPE: Record<string, string> = {
+  house: "Casas",
+  apartment: "Departamentos",
+  land: "Terrenos",
+  commercial: "Locales comerciales",
+  commercial_warehouse: "Bodegas comerciales",
+  industrial_warehouse: "Bodegas industriales",
+  other: "Otros",
+};
 const ROLE: Record<string, string> = { buyer: "Compradores", seller: "Vendedores", agent: "Asesores", admin: "Administradores" };
 const KIND: Record<string, string> = { self_publish: "Publicar por su cuenta", find_agent: "Buscar un asesor", services: "Servicios" };
 

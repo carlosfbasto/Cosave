@@ -18,6 +18,7 @@ const flat = (p: PropertyRow) => ({
   operation: p.operation,
   price: Number(p.price),
   currency: p.currency,
+  maintenanceFee: p.maintenanceFee === null ? null : Number(p.maintenanceFee),
   state: p.location?.state ?? "",
   city: p.location?.city ?? "",
   zone: p.location?.zone ?? null,
@@ -30,6 +31,8 @@ const flat = (p: PropertyRow) => ({
   parkingSpots: p.features?.parkingSpots ?? null,
   landAreaM2: p.features?.landAreaM2 ?? null,
   builtAreaM2: p.features?.builtAreaM2 ?? null,
+  amenities: p.features?.amenities ?? [],
+  materials: p.features?.materials ?? [],
 });
 
 const images = (p: PropertyRow) => p.images.map((i) => ({ id: i.id, url: imageUrl(i.storagePath), position: i.position }));

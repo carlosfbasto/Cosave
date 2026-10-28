@@ -23,6 +23,8 @@ enum PropertyType {
   land
   apartment
   commercial
+  commercial_warehouse
+  industrial_warehouse
   other
 }
 
@@ -118,6 +120,8 @@ model Property {
   description String?
   price       Decimal        @db.Decimal(14, 2)
   currency    String         @default("MXN")
+  /// Cuota mensual de mantenimiento (MXN). Solo departamentos y propiedades en privada.
+  maintenanceFee Decimal?    @db.Decimal(12, 2)
   ownerId     String         @db.Uuid
   agentId     String?        @db.Uuid
   /// Motivo de rechazo o aviso de posible duplicado para el revisor.
@@ -179,6 +183,9 @@ model PropertyFeatures {
   parkingSpots Int?
   landAreaM2   Float?
   builtAreaM2  Float?
+  /// Claves de AMENITIES y MATERIALS (packages/shared).
+  amenities    String[] @default([])
+  materials    String[] @default([])
 
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
@@ -193,6 +200,24 @@ model PropertyImage {
   property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId, position])
+}
+
+/// Catálogo de códigos postales de México (GeoNames, CC BY 4.0). Una fila por colonia.
+/// Se carga con `pnpm --filter @cosave/api db:postal-codes <MX.txt>`; solo lectura para la app.
+model PostalCode {
+  id           Int     @id @default(autoincrement())
+  code         String  @db.Char(5)
+  settlement   String
+  state        String
+  municipality String
+  /// Ciudad, cuando GeoNames la indica (si no, se usa el municipio).
+  city         String?
+  /// Coordenadas aproximadas de la colonia (para centrar el mapa).
+  latitude     Float?
+  longitude    Float?
+
+  @@index([code])
+  @@index([state, municipality])
 }
 
 model Favorite {
