@@ -226,3 +226,14 @@ The design system maintains a refined balance between architectural firmness and
 
 ### Modals & Dossier Overlays
 - **Layout:** Centered or side-drawn structural drawers. Clean header with 1px divider, ample 2rem inner padding, sticky bottom action bar, and seamless integration of high-resolution floor plans and virtual tours.
+
+## Listado de propiedades (`/properties`) — nota COSAVE
+
+Basado en el diseño de Stitch «Explorador y resultados con mapa», adaptado a México (MXN, «recámaras»).
+
+- **Vistas** (parámetro `vista` en la URL): *Lista y mapa* (predeterminada; tarjetas horizontales a la izquierda y mapa fijo a la derecha), *Cuadrícula* (3 columnas) y *Solo mapa*. En pantallas chicas, un botón flotante alterna lista ⇄ mapa.
+- **Filtros**: chips de filtros activos con ✕ y «Restablecer todo»; el resto de los filtros vive en un panel lateral («Filtros»). «Guardar alerta» abre la búsqueda guardada.
+- **Tarjeta horizontal** (`property-row-card.tsx`): `ZONA • CIUDAD` en `azure`, fecha de publicación, precio + $/m², características con dato real (las que valen 0 no se muestran), descripción y «Ver ficha».
+- **Mapa**: pines de precio `ink`, `azure` al resaltar; pasar sobre una tarjeta resalta su pin y abrir un pin marca su tarjeta.
+- **Paginación**: 12 por página (parámetro `pagina`); el mapa muestra todos los resultados.
+- **Omitido del diseño por no tener datos reales**: sellos de auditoría y eficiencia energética, alerta de mercado, bajadas de precio, «sin comisión», rendimiento de inversión, capas de metro/colegios/precio por zona, orden por «relevancia» y amenidades (terraza, planta…).

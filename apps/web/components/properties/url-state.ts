@@ -3,12 +3,19 @@ import { emptyFilters, type Filters } from "./filters-sidebar";
 import type { Range } from "./range-filter";
 
 export type Sort = "recent" | "asc" | "desc";
+/** `split`: lista y mapa lado a lado (predeterminada); `grid`: solo tarjetas; `map`: solo mapa. */
+export type View = "split" | "grid" | "map";
 
 export interface SearchState {
   filters: Filters;
   sort: Sort;
   q: string;
+  view: View;
+  page: number;
 }
+
+/** Vista → valor del parámetro `vista` (la predeterminada no se escribe). */
+const viewParam: Record<View, string | null> = { split: null, grid: "cuadricula", map: "mapa" };
 
 /** Valores posibles de cada filtro de lista; salen del catálogo cargado. */
 export interface Facets {
@@ -54,11 +61,14 @@ export function parseSearch(sp: URLSearchParams, facets: Facets): SearchState {
   }
   filters.currency = sp.get("moneda") === "USD" ? "USD" : "MXN";
   const orden = sp.get("orden");
-  return { filters, sort: orden === "asc" || orden === "desc" ? orden : "recent", q: (sp.get("q") ?? "").trim().slice(0, 100) };
+  const vista = sp.get("vista");
+  const view = (Object.keys(viewParam) as View[]).find((v) => viewParam[v] === vista) ?? "split";
+  const page = Math.max(1, Math.floor(num(sp.get("pagina")) ?? 1));
+  return { filters, sort: orden === "asc" || orden === "desc" ? orden : "recent", q: (sp.get("q") ?? "").trim().slice(0, 100), view, page };
 }
 
 /** Estado → query string ("" si no hay nada que guardar, o "?a=b&…"). */
-export function toQuery({ filters, sort, q }: SearchState): string {
+export function toQuery({ filters, sort, q, view, page }: SearchState): string {
   const sp = new URLSearchParams();
   if (q) sp.set("q", q);
   for (const [key, param] of lists) for (const v of filters[key]) sp.append(param, slugify(v));
@@ -69,6 +79,8 @@ export function toQuery({ filters, sort, q }: SearchState): string {
   }
   if (filters.currency === "USD") sp.set("moneda", "USD");
   if (sort !== "recent") sp.set("orden", sort);
+  if (viewParam[view]) sp.set("vista", viewParam[view]);
+  if (page > 1) sp.set("pagina", String(page));
   const s = sp.toString();
   return s ? `?${s}` : "";
 }

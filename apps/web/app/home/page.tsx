@@ -83,7 +83,7 @@ export default async function Home() {
           subtitle="Las opciones mejor valoradas de la semana, listas para visitar."
           actions={
             <div className="flex flex-wrap gap-2">
-              <Link href="/properties/map" className="btn bg-slate-200/70 px-4 py-2 text-sm text-ink hover:bg-slate-200">
+              <Link href="/properties?vista=mapa" className="btn bg-slate-200/70 px-4 py-2 text-sm text-ink hover:bg-slate-200">
                 Ver mapa
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden>
                   <path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" />

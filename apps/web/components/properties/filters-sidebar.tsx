@@ -98,7 +98,7 @@ export function FiltersSidebar({
   onReset: () => void;
 }) {
   return (
-    <div className="flex min-h-[453px] w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-5 lg:w-[285px]">
+    <div className="flex w-full flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-5">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="headline-sm text-ink">Filtros</h2>
         <button type="button" onClick={onReset} className="cursor-pointer text-[0.8rem] text-slate-500 underline transition-colors hover:text-ink">

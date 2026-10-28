@@ -23,7 +23,7 @@ export function Section({
   const bg = { white: "bg-white", gray: "bg-slate-50", ink: "bg-ink text-white" }[tone];
   const dark = tone === "ink";
   return (
-    <section id={id} className={`${bg} py-14 sm:py-20`}>
+    <section id={id} className={`${bg} scroll-mt-28 py-14 sm:py-20`}>
       <div className="mx-auto max-w-[1440px] px-4 md:px-8">
         <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
