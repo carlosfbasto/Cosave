@@ -48,7 +48,8 @@ export function toListed(a: ApiProperty): ListedProperty {
     city: a.city,
     state: a.state,
     zone: a.zone ?? "Centro",
-    type: TYPE_LABEL[a.type],
+    // Un tipo que esta versión de la web aún no conoce se muestra como «Otro» en vez de romper la página.
+    type: TYPE_LABEL[a.type] ?? "Otro",
     bedrooms: a.bedrooms ?? 0,
     bathrooms: a.bathrooms ?? 0,
     area: a.builtAreaM2 ?? a.landAreaM2 ?? 0,

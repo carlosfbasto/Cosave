@@ -247,3 +247,15 @@ Adaptado del diseño de Stitch «Publicar inmueble», solo con datos que COSAVE 
 - **Paso 2:** zona para arrastrar fotos o elegirlas (la nitidez se revisa en el navegador antes de subir y otra vez en el api; una borrosa muestra «No se pudo cargar … : la foto se ve borrosa…» con cómo corregirlo), «Foto portada», «Hacer portada» y «Quitar».
 - **Paso 3:** vista previa de la tarjeta y lista «Antes de enviar» con lo obligatorio y lo opcional.
 - **Omitido del diseño (sin datos o falso):** NOM-247, certeza notarial, Folio Real / RPPC, clave catastral, certificado de libertad de gravamen, asesor notarial, «+43 % de ofertas», guardado automático, renta temporal, penthouse/oficina, nivel de piso, vista satélite, lugares cercanos, % de nitidez visible, girar fotos, planos PDF y reordenar arrastrando.
+
+## Perfil de usuario (`/profile/[id]`, `/favorites/[id]`) — nota COSAVE
+
+Fusión de los diseños de Stitch «Mi perfil de usuario» (tarjetas y métricas) y «Perfil certeza jurídica» (barra lateral slate).
+
+- **Marco** (`components/user/profile-shell.tsx`): barra lateral blanca de 260px + contenido sobre `slate-50`. Favoritos es una página aparte, sin barra lateral (se abre desde el corazón de la cabecera), con «Volver» y «Mi perfil». La navegación no cambió: Perfil · Favoritos · Consultas · Mis búsquedas guardadas · Publicados («Mis propiedades» para el dueño). Activo: `bg-slate-100`, texto `ink`, ícono `azure`.
+- **Íconos**: `components/user/profile-icons.tsx`, trazo de 1.8 como los de la cabecera (no Material Symbols).
+- **Piezas compartidas** (`profile-section.tsx`): `ProfileSection` (título `headline-md` + descripción + acción), `PanelCard`, `EmptyState` (borde punteado e ícono en círculo), `RowIcon`, `Loading`, `ErrorNote`.
+- **Perfil**: tarjeta de identidad (foto editable, ciudad, «Miembro desde») y, debajo, solo los datos personales como campos de solo lectura (candado en los privados) con «Editar datos». Sin botones de acción ni tarjetas de conteos.
+- **Favoritos**: selector «Cuadrícula / Lista» como el de `/properties` (parámetro `vista=lista` en la URL; la cuadrícula es la predeterminada). Cuadrícula de tarjetas 16:10 o lista con la tarjeta horizontal del listado (`PropertyRowCard`); corazón para quitar y $/m² calculado.
+- **Búsquedas guardadas**: «Ver resultados» abre `/properties/sale|rentals` con los mismos filtros.
+- **Omitido por no tener datos reales**: verificación CURP/INE/RENAPO/NOM-247, índice de confiabilidad, notaría asignada, concierge/asesor AMPI, dossier jurídico, preferencias (WhatsApp, privacidad telefónica, divisa), frecuencia de alertas y coincidencias de la semana, colecciones de favoritos y modo oscuro.

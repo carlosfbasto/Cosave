@@ -1,6 +1,6 @@
 import { AccountProfile } from "@/components/user/account-profile";
 import { ProfileDetails } from "@/components/user/profile-details";
-import { ProfileHeader } from "@/components/user/profile-header";
+import { ProfileOverview } from "@/components/user/profile-overview";
 import { formatDate, getMockUser } from "@/lib/mock-users";
 
 /** Perfil de un usuario ficticio. El rol es interno: no se muestra. */
@@ -20,14 +20,9 @@ export default async function UserProfilePage({ params }: PageProps<"/profile/[i
   ];
 
   return (
-    <main className="flex-1">
-      <div className="mx-auto max-w-3xl space-y-8 px-4 py-10">
-        <ProfileHeader user={u} />
-        <section>
-          <h2 className="mb-2 text-lg font-bold text-ink">Datos del perfil</h2>
-          <ProfileDetails userId={u.id} publicRows={publicRows} privateRows={privateRows} />
-        </section>
-      </div>
-    </main>
+    <ProfileOverview
+      user={{ ...u, city: `${u.city}, Yucatán`, joinedAt: formatDate(u.joinedAt) }}
+      details={<ProfileDetails userId={u.id} publicRows={publicRows} privateRows={privateRows} />}
+    />
   );
 }

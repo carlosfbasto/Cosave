@@ -6,7 +6,8 @@ import { Advertiser } from "@/components/property-detail/advertiser";
 import { BackButton } from "@/components/back-button";
 import { PhotoMosaic } from "@/components/property-detail/photo-mosaic";
 import { ShareButton } from "@/components/property-detail/share-button";
-import { PropertyShowcaseCard } from "@/components/home/property-showcase-card";
+import { ShowcaseGrid } from "@/components/home/property-showcase-card";
+import { LocationMapView } from "@/components/property-detail/location-map-view";
 import { AMENITY_LABEL, MATERIAL_LABEL, UNAVAILABLE_LABEL } from "@cosave/shared";
 import { fetchCatalog, fetchProperty } from "@/lib/catalog";
 import { cityCoords, formatMxn, galleryFor, paragraphsFor, similarTo, slugify } from "@/lib/mock-data";
@@ -58,7 +59,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
   const materials = p.materials.map((m) => MATERIAL_LABEL[m]).filter(Boolean);
   const advertiser = demo ? advertiserOf(p.code) : undefined;
   const catalog = (await fetchCatalog()).items;
-  const similar = similarTo(p, catalog).slice(0, 3);
+  const similar = similarTo(p, catalog).slice(0, 4);
   const sameKind = catalog.filter((o) => o.code !== p.code && o.type === p.type && o.operation === p.operation).length;
   const listHref = isRent ? "/properties/rentals" : "/properties/sale";
 
@@ -67,10 +68,6 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
   const lat = typeof p.latitude === "number" ? p.latitude : c ? c.lat + (p.map.y - 50) / 2000 : null;
   const lon = typeof p.longitude === "number" ? p.longitude : c ? c.lon + (p.map.x - 50) / 2000 : null;
   const exact = typeof p.latitude === "number";
-  const mapSrc =
-    lat !== null && lon !== null
-      ? `https://www.openstreetmap.org/export/embed.html?bbox=${[lon - 0.012, lat - 0.008, lon + 0.012, lat + 0.008].join("%2C")}&layer=mapnik&marker=${lat}%2C${lon}`
-      : null;
 
   const rows: [string, string][] = [
     ["Tipo", p.type],
@@ -218,12 +215,12 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
               )}
             </section>
 
-            {mapSrc && (
+            {lat !== null && lon !== null && (
               <section className={card}>
                 <h2 className="headline-sm mb-4 text-ink">Ubicación</h2>
                 <div className="relative overflow-hidden rounded-xl border border-slate-200">
-                  <iframe title={`Mapa de ${p.title}`} src={mapSrc} loading="lazy" className="block h-80 w-full border-0" />
-                  <div className="pointer-events-none absolute left-3 top-3 max-w-xs rounded-lg bg-white/95 p-3 shadow-glow ring-1 ring-slate-200 backdrop-blur-md">
+                  <LocationMapView lat={lat} lng={lon} exact={exact} />
+                  <div className="pointer-events-none absolute left-3 top-3 z-[500] max-w-xs rounded-lg bg-white/95 p-3 shadow-glow ring-1 ring-slate-200 backdrop-blur-md">
                     <p className="text-sm font-semibold text-ink">{where}</p>
                     {!exact && <p className="text-xs text-slate-500">Ubicación aproximada</p>}
                   </div>
@@ -249,9 +246,8 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
                 </Link>
               )}
             </div>
-            <div className="grid gap-6 md:grid-cols-3">
-              {similar.map((s) => <PropertyShowcaseCard key={s.code} p={s} />)}
-            </div>
+            <ShowcaseGrid items={similar} />
+
           </div>
         </section>
       )}
