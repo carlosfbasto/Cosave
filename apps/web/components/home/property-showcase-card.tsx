@@ -56,19 +56,19 @@ export function PropertyShowcaseCard({ p }: { p: ListedProperty }) {
           ))}
         </dl>
 
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-3">
-          <div>
+        <div className="mt-auto flex items-end justify-between gap-2">
+          <div className="min-w-0">
             <p className="flex items-baseline gap-1">
-              <span className="metric-price text-ink">{formatMxn(p.price)}</span>
-              <span className="whitespace-nowrap text-xs font-semibold text-slate-500">MXN{isRent && " /mes"}</span>
+              <span className="truncate font-display text-[1.05rem] font-bold leading-6 tracking-tight text-ink">{formatMxn(p.price)}</span>
+              <span className="whitespace-nowrap text-[0.7rem] font-semibold text-slate-500">MXN{isRent && " /mes"}</span>
             </p>
             {perM2 !== null && (
-              <p className="text-[0.8rem] text-slate-500" title="Precio por metro cuadrado construido">
+              <p className="truncate text-xs text-slate-500" title="Precio por metro cuadrado construido">
                 {formatMxn(perM2)} /m²{isRent && " al mes"}
               </p>
             )}
           </div>
-          <Link href={href} className="btn shrink-0 bg-slate-100 px-3.5 py-2 text-sm text-ink hover:bg-slate-200">
+          <Link href={href} className="btn shrink-0 whitespace-nowrap bg-slate-100 px-3 py-2 text-[0.8rem] text-ink hover:bg-slate-200">
             Ver propiedad
           </Link>
         </div>
