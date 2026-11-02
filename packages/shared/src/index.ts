@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const USER_ROLES = ["buyer", "seller", "agent", "admin"] as const;
-export const PROPERTY_TYPES = ["house", "land", "apartment", "commercial", "other"] as const;
+export const PROPERTY_TYPES = ["house", "land", "apartment", "commercial", "commercial_warehouse", "industrial_warehouse", "other"] as const;
 export const OPERATION_TYPES = ["sale", "rent"] as const;
 export const PROPERTY_STATUSES = ["draft", "pending", "published", "paused", "sold", "rented", "rejected", "archived"] as const;
 export const INQUIRY_STATUSES = ["pending", "answered"] as const;
@@ -34,7 +34,9 @@ export const PROPERTY_TYPE_LABEL: Record<PropertyType, string> = {
   house: "Casa",
   apartment: "Departamento",
   land: "Terreno",
-  commercial: "Local / bodega comercial",
+  commercial: "Local comercial",
+  commercial_warehouse: "Bodega comercial",
+  industrial_warehouse: "Bodega industrial",
   other: "Otro",
 };
 
@@ -83,6 +85,35 @@ export const IMAGE_LIMITS = {
 } as const;
 export const IMAGE_LABEL = "JPG, PNG o WebP";
 
+/**
+ * Nitidez mínima de una foto. La miden igual el navegador (antes de subir) y el api (al recibir):
+ * la foto se reduce a `size` px por el lado mayor, en escala de grises, y se calcula `laplacianVariance`.
+ */
+export const SHARPNESS = { size: 800, min: 50 } as const;
+export const BLURRY_IMAGE_MESSAGE = "la foto se ve borrosa. Tómala de nuevo con buena luz y el celular firme, o elige otra más nítida.";
+
+/**
+ * Varianza del laplaciano (detección de bordes) de una imagen en escala de grises (0–255, fila por fila).
+ * Una foto enfocada tiene bordes marcados y una varianza alta; una borrosa o movida, baja.
+ */
+export function laplacianVariance(gray: ArrayLike<number>, width: number, height: number): number {
+  let sum = 0;
+  let sq = 0;
+  let n = 0;
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const i = y * width + x;
+      const v = gray[i - width]! + gray[i + width]! + gray[i - 1]! + gray[i + 1]! - 4 * gray[i]!;
+      sum += v;
+      sq += v * v;
+      n++;
+    }
+  }
+  if (!n) return 0;
+  const mean = sum / n;
+  return sq / n - mean * mean;
+}
+
 /** Campos de características que aplican a cada tipo de inmueble. */
 export type FeatureField = "bedrooms" | "bathrooms" | "parkingSpots" | "landAreaM2" | "builtAreaM2";
 export const FEATURE_FIELDS_BY_TYPE: Record<PropertyType, readonly FeatureField[]> = {
@@ -90,8 +121,71 @@ export const FEATURE_FIELDS_BY_TYPE: Record<PropertyType, readonly FeatureField[
   apartment: ["bedrooms", "bathrooms", "parkingSpots", "builtAreaM2"],
   land: ["landAreaM2"],
   commercial: ["bathrooms", "parkingSpots", "landAreaM2", "builtAreaM2"],
+  commercial_warehouse: ["bathrooms", "parkingSpots", "landAreaM2", "builtAreaM2"],
+  industrial_warehouse: ["bathrooms", "parkingSpots", "landAreaM2", "builtAreaM2"],
   other: ["landAreaM2", "builtAreaM2"],
 };
+
+const WAREHOUSES: PropertyType[] = ["commercial_warehouse", "industrial_warehouse"];
+
+/**
+ * Características (amenidades) que el anunciante puede marcar, y en qué tipos aplican.
+ * En la BD se guarda la clave (`PropertyFeatures.amenities`); la etiqueta es solo para mostrar.
+ */
+export const AMENITIES = [
+  { key: "kitchen", label: "Cocina integral", types: ["house", "apartment"] },
+  { key: "covered_garage", label: "Cochera cubierta", types: ["house"] },
+  { key: "pool", label: "Alberca", types: ["house", "apartment"] },
+  { key: "garden", label: "Jardín", types: ["house"] },
+  { key: "terrace", label: "Terraza", types: ["house", "apartment"] },
+  { key: "palapa", label: "Palapa", types: ["house"] },
+  { key: "balcony", label: "Balcón", types: ["apartment"] },
+  { key: "service_room", label: "Cuarto de servicio", types: ["house"] },
+  { key: "furnished", label: "Amueblado", types: ["house", "apartment"] },
+  { key: "air_conditioning", label: "Aire acondicionado", types: ["house", "apartment", "commercial"] },
+  { key: "elevator", label: "Elevador", types: ["apartment", "commercial"] },
+  { key: "green_areas", label: "Áreas verdes", types: ["house", "apartment", "land"] },
+  { key: "gated", label: "Privada o fraccionamiento cerrado", types: ["house", "apartment", "land"] },
+  { key: "security", label: "Vigilancia 24 horas", types: ["house", "apartment", "commercial", ...WAREHOUSES] },
+  { key: "water_drainage", label: "Agua potable y drenaje", types: ["house", "apartment", "land", "commercial", ...WAREHOUSES] },
+  { key: "electricity", label: "Servicio de luz", types: ["land"] },
+  { key: "avenue_front", label: "Frente a avenida", types: ["land", "commercial", ...WAREHOUSES] },
+  { key: "offices", label: "Oficinas administrativas", types: WAREHOUSES },
+  { key: "loading_dock", label: "Andén de carga", types: WAREHOUSES },
+  { key: "maneuver_yard", label: "Patio de maniobras", types: WAREHOUSES },
+  { key: "trailer_access", label: "Acceso para tráileres", types: WAREHOUSES },
+  { key: "three_phase", label: "Instalación eléctrica trifásica", types: ["commercial", ...WAREHOUSES] },
+  { key: "substation", label: "Subestación eléctrica", types: ["industrial_warehouse"] },
+] as const satisfies readonly { key: string; label: string; types: readonly PropertyType[] }[];
+
+/** Materiales de construcción. No aplican a terrenos. */
+export const MATERIALS = [
+  { key: "block_concrete", label: "Muros de block y concreto" },
+  { key: "vigueta_bovedilla", label: "Losa de vigueta y bovedilla" },
+  { key: "concrete_slab", label: "Losa de concreto armado" },
+  { key: "steel_structure", label: "Estructura de acero" },
+  { key: "galvanized_roof", label: "Techo de lámina galvanizada" },
+  { key: "porcelain_floor", label: "Piso de porcelanato" },
+  { key: "polished_concrete_floor", label: "Piso de concreto pulido" },
+  { key: "concrete_floor", label: "Piso de concreto armado" },
+  { key: "aluminum_windows", label: "Cancelería de aluminio" },
+] as const;
+
+export type Amenity = (typeof AMENITIES)[number]["key"];
+export type Material = (typeof MATERIALS)[number]["key"];
+export const AMENITY_LABEL = Object.fromEntries(AMENITIES.map((a) => [a.key, a.label])) as Record<Amenity, string>;
+export const MATERIAL_LABEL = Object.fromEntries(MATERIALS.map((m) => [m.key, m.label])) as Record<Material, string>;
+
+/** Características que se ofrecen para un tipo; «Otro» admite todas. */
+export const amenitiesFor = (type: PropertyType): Amenity[] =>
+  AMENITIES.filter((a) => type === "other" || (a.types as readonly PropertyType[]).includes(type)).map((a) => a.key);
+/** Materiales que se ofrecen para un tipo (ninguno en terrenos). */
+export const materialsFor = (type: PropertyType): Material[] => (type === "land" ? [] : MATERIALS.map((m) => m.key));
+
+const amenityKeys = AMENITIES.map((a) => a.key) as [Amenity, ...Amenity[]];
+const materialKeys = MATERIALS.map((m) => m.key) as [Material, ...Material[]];
+/** Lista sin repetidos. */
+const uniqueList = <T extends string>(keys: [T, ...T[]]) => z.array(z.enum(keys)).transform((l) => [...new Set(l)]);
 
 const draftFields = {
   operation: operationTypeSchema,
@@ -103,7 +197,8 @@ const draftFields = {
   city: z.string().trim().min(1, "Indica la ciudad").max(80),
   zone: z.string().trim().max(80).optional(),
   address: z.string().trim().max(200).optional(),
-  postalCode: z.string().trim().regex(/^\d{5}$/, "Debe tener 5 dígitos").optional(),
+  postalCode: z.string({ message: "Indica el código postal" }).trim().regex(/^\d{5}$/, "Debe tener 5 dígitos"),
+  maintenanceFee: z.number().nonnegative("No puede ser negativa").max(1_000_000).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
   bedrooms: z.number().int().nonnegative().max(50).optional(),
@@ -111,6 +206,8 @@ const draftFields = {
   parkingSpots: z.number().int().nonnegative().max(50).optional(),
   landAreaM2: z.number().nonnegative().optional(),
   builtAreaM2: z.number().nonnegative().optional(),
+  amenities: uniqueList(amenityKeys).optional(),
+  materials: uniqueList(materialKeys).optional(),
 };
 
 /** Datos COMPLETOS para enviar a revisión (formulario "Publicar propiedad"). */
@@ -131,6 +228,7 @@ export const propertyPatchSchema = z
     zone: draftFields.zone.nullable(),
     address: draftFields.address.nullable(),
     postalCode: draftFields.postalCode.nullable(),
+    maintenanceFee: draftFields.maintenanceFee.nullable(),
     latitude: draftFields.latitude.nullable(),
     longitude: draftFields.longitude.nullable(),
     bedrooms: draftFields.bedrooms.nullable(),
@@ -149,9 +247,27 @@ export type PropertyPartial = z.infer<typeof propertyPartialSchema>;
 export const REQUIRED_FIELD_LABEL: Record<string, string> = {
   title: "el título",
   price: "el precio",
+  postalCode: "el código postal",
   state: "el estado",
   city: "la ciudad",
 };
+
+/** La cuota de mantenimiento solo aplica a departamentos y a propiedades en privada o fraccionamiento cerrado. */
+export const needsMaintenanceFee = (type: PropertyType, amenities: readonly string[] = []) => type === "apartment" || amenities.includes("gated");
+
+/** Respuesta de `GET /postal-codes/:code`: estado y ciudad del código y sus colonias. */
+export interface PostalCodeInfo {
+  code: string;
+  state: string;
+  city: string;
+  settlements: string[];
+  /** Municipio del código (la ciudad puede ser otra en zonas metropolitanas). */
+  municipality: string;
+  /** Centro aproximado del código postal; null si el catálogo no trae coordenadas. */
+  center: { lat: number; lng: number } | null;
+  /** Recuadro [[sur, oeste], [norte, este]] del municipio, para encuadrarlo en el mapa; null si no hay coordenadas. */
+  bounds: [[number, number], [number, number]] | null;
+}
 
 /**
  * Quién puede mover una propiedad de un estado a otro. El estado nunca se edita libremente:
@@ -199,7 +315,7 @@ export function editScope(status: PropertyStatus): EditScope {
   return "locked";
 }
 /** En `limited` solo cambian estos campos; tipo, operación y ubicación exigen regresarla a borrador. */
-export const LIMITED_EDIT_FIELDS = ["description", "price", "bedrooms", "bathrooms", "parkingSpots", "landAreaM2", "builtAreaM2"] as const;
+export const LIMITED_EDIT_FIELDS = ["description", "price", "bedrooms", "bathrooms", "parkingSpots", "landAreaM2", "builtAreaM2", "amenities", "materials", "maintenanceFee"] as const;
 
 export type PropertyDraft = z.infer<typeof propertyDraftSchema>;
 

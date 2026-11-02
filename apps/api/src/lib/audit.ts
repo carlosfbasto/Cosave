@@ -18,9 +18,13 @@ export interface AuditEntry {
  */
 export const auditCreate = (e: AuditEntry) => prisma.auditLog.create({ data: e });
 
+/** Igualdad de valores de la bitácora; las listas (características) se comparan sin importar el orden. */
+const same = (a: unknown, b: unknown) =>
+  Array.isArray(a) && Array.isArray(b) ? a.length === b.length && a.every((x) => b.includes(x)) : (a ?? null) === (b ?? null);
+
 /** Solo los campos que cambiaron entre dos versiones (`before` / `after` de la bitácora). */
 export function changedFields(before: Record<string, unknown>, after: Record<string, unknown>) {
-  const keys = Object.keys(after).filter((k) => after[k] !== undefined && (after[k] ?? null) !== (before[k] ?? null));
+  const keys = Object.keys(after).filter((k) => after[k] !== undefined && !same(after[k], before[k]));
   const pick = (src: Record<string, unknown>) => Object.fromEntries(keys.map((k) => [k, (src[k] ?? null) as Prisma.InputJsonValue | null]));
   return { keys, before: pick(before), after: pick(after) };
 }

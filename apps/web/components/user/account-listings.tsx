@@ -8,6 +8,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { STATUS_STYLE } from "@/components/status-badge";
 import { NoticeCard } from "@/components/notice-card";
 import { InquiriesPanel } from "@/components/user/inquiries-panel";
+import { ProfileIcon } from "@/components/user/profile-icons";
+import { EmptyState, ProfileSection } from "@/components/user/profile-section";
 import { ApiError } from "@/lib/api";
 import { loginUrl } from "@/lib/auth";
 import { useCurrentUser } from "@/lib/current-user";
@@ -16,8 +18,8 @@ import { formatDate } from "@/lib/mock-users";
 import { mineApi, useMyProperties, type MyProperty } from "@/lib/my-properties";
 import { showToast } from "@/lib/toast";
 
-const btn = "cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50";
-const btnPrimary = "cursor-pointer rounded-lg bg-ink px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-50";
+const btn = "btn btn-outline px-3 py-1.5 text-xs";
+const btnPrimary = "btn btn-primary px-3 py-1.5 text-xs";
 
 type Action = { label: string; to: PropertyStatus; tone?: "danger"; confirm?: string };
 
@@ -62,36 +64,37 @@ function Card({ p, onUpdate }: { p: MyProperty; onUpdate: (next: MyProperty) => 
   }
 
   return (
-    <li className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <li className="card-surface card-hover overflow-hidden rounded-3xl">
       <div className="flex flex-col sm:flex-row">
-        <div className="relative aspect-[4/3] bg-slate-100 sm:aspect-auto sm:w-56 sm:shrink-0">
+        <div className="relative aspect-[16/10] bg-slate-100 sm:aspect-auto sm:min-h-[13rem] sm:w-64 sm:shrink-0">
           {cover ? (
-            <Image src={cover} alt={p.title || "Propiedad"} fill sizes="(min-width: 640px) 224px, 100vw" className={`object-cover ${p.status === "archived" ? "opacity-60 grayscale" : ""}`} />
+            <Image src={cover} alt={p.title || "Propiedad"} fill sizes="(min-width: 640px) 256px, 100vw" className={`object-cover ${p.status === "archived" ? "opacity-60 grayscale" : ""}`} />
           ) : (
-            <span className="absolute inset-0 grid place-items-center text-xs text-slate-500">Sin fotos</span>
+            <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-xs text-slate-500">
+              <ProfileIcon name="home" className="h-6 w-6 text-slate-400" />
+              Sin fotos
+            </span>
           )}
+          <span className={`absolute left-3 top-3 rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[p.status]}`}>{PROPERTY_STATUS_LABEL[p.status]}</span>
         </div>
-        <div className="flex flex-1 flex-col gap-2 p-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-bold text-ink">{p.title || "Borrador sin título"}</h2>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLE[p.status]}`}>{PROPERTY_STATUS_LABEL[p.status]}</span>
-          </div>
-          <p className="text-lg font-bold text-ink">
-            {p.price > 0 ? formatMxn(p.price) : "Sin precio"}
-            {isRent && p.price > 0 && <span className="text-sm font-normal text-slate-600"> /mes</span>}
-          </p>
-          <p className="text-sm text-slate-600">
+        <div className="flex min-w-0 flex-1 flex-col gap-2 p-5">
+          <p className="label-sm truncate text-azure">
             {PROPERTY_TYPE_LABEL[p.type]} en {isRent ? "renta" : "venta"}
-            {(p.city || p.zone) && ` · ${[p.zone, p.city].filter(Boolean).join(", ")}`}
+            {(p.city || p.zone) && ` • ${[p.zone, p.city].filter(Boolean).join(", ")}`}
+          </p>
+          <h2 className="text-[1.05rem] font-semibold text-ink">{p.title || "Borrador sin título"}</h2>
+          <p className="flex items-baseline gap-1">
+            <span className="metric-price text-ink">{p.price > 0 ? formatMxn(p.price) : "Sin precio"}</span>
+            {p.price > 0 && <span className="text-xs font-semibold text-slate-500">MXN{isRent && " /mes"}</span>}
           </p>
           <p className="text-xs text-slate-500">
             {p.code} · actualizada el {formatDate(p.updatedAt.slice(0, 10))}
           </p>
           {p.status === "rejected" && p.reviewNote && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">Motivo del rechazo: {p.reviewNote}</p>}
-          {p.status === "pending" && <p className="text-sm text-slate-600">En revisión: no se puede editar hasta que sea aprobada o regreses a borrador.</p>}
+          {p.status === "pending" && <p className="rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-800">En revisión: no se puede editar hasta que sea aprobada o regreses a borrador.</p>}
           {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
-          <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
+          <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
             {scope !== "locked" ? (
               <Link href={`/vender/${p.id}`} className={btnPrimary}>
                 {p.status === "draft" || p.status === "rejected" ? "Continuar / enviar" : "Editar"}
@@ -149,26 +152,20 @@ export function AccountListings({ id }: { id: string }) {
   if (!items) return <p className="p-8 text-sm text-slate-600">Cargando…</p>;
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-6 py-10">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-[20px] font-semibold text-ink">Mis propiedades</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {sorted.length === 0 ? "Aún no has publicado propiedades." : `${sorted.length} ${sorted.length === 1 ? "propiedad" : "propiedades"}.`}
-          </p>
-        </div>
-        {sorted.length > 0 && (
-          <Link href="/vender" className="rounded-lg bg-ink px-4 py-2 text-[0.9rem] font-semibold text-white transition-colors hover:bg-ink-hover">
+    <ProfileSection
+      title="Mis propiedades"
+      description={sorted.length === 0 ? "Aún no has publicado propiedades." : `${sorted.length} ${sorted.length === 1 ? "propiedad" : "propiedades"}.`}
+      action={
+        sorted.length > 0 && (
+          <Link href="/vender" className="btn btn-primary px-4 py-2 text-sm">
+            <ProfileIcon name="plus" className="h-4 w-4" />
             Publicar propiedad
           </Link>
-        )}
-      </header>
+        )
+      }
+    >
       {sorted.length === 0 ? (
-        <div className="py-10 text-center">
-          <Link href="/vender" className="inline-block rounded-lg bg-ink px-5 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
-            Quiero vender o rentar mi propiedad
-          </Link>
-        </div>
+        <EmptyState icon="home" title="Aún no tienes propiedades" text="Publica tu casa, departamento, terreno o bodega. La revisamos antes de mostrarla y recibes aquí las consultas." href="/vender" cta="Quiero vender o rentar mi propiedad" />
       ) : (
         <ul className="space-y-4">
           {sorted.map((p) => (
@@ -176,6 +173,6 @@ export function AccountListings({ id }: { id: string }) {
           ))}
         </ul>
       )}
-    </main>
+    </ProfileSection>
   );
 }

@@ -30,4 +30,12 @@ describe("changedFields", () => {
   it("sin cambios reales no hay nada que registrar", () => {
     expect(changedFields(current, { ...current }).keys).toEqual([]);
   });
+
+  it("las listas de características se comparan sin importar el orden", () => {
+    const withList = { ...current, amenities: ["pool", "garden"] };
+    expect(changedFields(withList, { amenities: ["garden", "pool"] }).keys).toEqual([]);
+    const c = changedFields(withList, { amenities: ["pool"] });
+    expect(c.keys).toEqual(["amenities"]);
+    expect(c.after).toEqual({ amenities: ["pool"] });
+  });
 });

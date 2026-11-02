@@ -32,7 +32,9 @@ const TYPE_WORDS: [RegExp, PropertyType][] = [
   [/^casa/, "house"],
   [/^(departamento|depa)/, "apartment"],
   [/^terreno/, "land"],
-  [/^(local|bodega|comercial)/, "commercial"],
+  [/^bodega industrial/, "industrial_warehouse"],
+  [/^bodega/, "commercial_warehouse"],
+  [/^(local|comercial)/, "commercial"],
   [/^otro/, "other"],
 ];
 const typeOf = (s: string) => TYPE_WORDS.find(([re]) => re.test(norm(s)))?.[1];

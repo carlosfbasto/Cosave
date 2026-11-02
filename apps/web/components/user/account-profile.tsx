@@ -3,7 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { NoticeCard } from "@/components/notice-card";
 import { ProfileDetails } from "@/components/user/profile-details";
-import { ProfileHeader } from "@/components/user/profile-header";
+import { ProfileIcon } from "@/components/user/profile-icons";
+import { ProfileOverview } from "@/components/user/profile-overview";
 import { api, ApiError, type Profile } from "@/lib/api";
 import { loginUrl } from "@/lib/auth";
 import { useCurrentUser } from "@/lib/current-user";
@@ -12,12 +13,12 @@ import { showToast } from "@/lib/toast";
 
 type AccountData = Profile;
 
-const field = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15";
+const label = "label-sm mb-1.5 block text-slate-500";
 
 /** Avatar con la inicial del nombre, para cuentas que aún no suben foto. */
 function initialsAvatar(name: string) {
   const letter = (name.trim().charAt(0) || "?").toUpperCase();
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112"><rect width="112" height="112" fill="#f5b800"/><text x="56" y="56" font-family="sans-serif" font-size="52" font-weight="700" fill="#10264a" text-anchor="middle" dominant-baseline="central">${letter}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112"><rect width="112" height="112" fill="#0f172a"/><text x="56" y="56" font-family="sans-serif" font-size="48" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="central">${letter}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
@@ -29,6 +30,7 @@ export function AccountProfile({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!isOwner || !me.remote) return;
@@ -48,6 +50,7 @@ export function AccountProfile({ id }: { id: string }) {
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError(null);
+    setSaving(true);
     const form = new FormData(e.currentTarget);
     try {
       const updated = await api<AccountData>("/me", {
@@ -59,6 +62,8 @@ export function AccountProfile({ id }: { id: string }) {
       showToast("Datos actualizados");
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "No se pudo guardar");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -68,48 +73,48 @@ export function AccountProfile({ id }: { id: string }) {
   ];
   const publicRows: [string, string][] = [
     ["Ciudad", profile.city ? `${profile.city}` : "Sin ciudad"],
-    ["Miembro desde", profile.createdAt ? formatDate(profile.createdAt) : "—"],
+    ["Miembro desde", profile.createdAt ? formatDate(profile.createdAt.slice(0, 10)) : "—"],
   ];
 
-  return (
-    <main className="flex-1">
-      <div className="mx-auto max-w-3xl space-y-8 px-4 py-10">
-        <ProfileHeader user={{ id: profile.id, fullName: profile.fullName, email: profile.email, avatar: initialsAvatar(profile.fullName) }} />
-
-        <section>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-ink">Datos del perfil</h2>
-            {!editing && (
-              <button type="button" onClick={() => setEditing(true)} className="cursor-pointer text-sm font-semibold text-ink underline">
-                Editar datos
-              </button>
-            )}
-          </div>
-          {editing ? (
-            <form onSubmit={onSubmit} className="space-y-3">
-              <label className="block text-sm text-ink">
-                Nombre completo
-                <input name="fullName" defaultValue={profile.fullName} required maxLength={120} className={`${field} mt-1`} />
-              </label>
-              <label className="block text-sm text-ink">
-                Teléfono
-                <input name="phone" defaultValue={profile.phone ?? ""} maxLength={30} className={`${field} mt-1`} />
-              </label>
-              <label className="block text-sm text-ink">
-                Ciudad
-                <input name="city" defaultValue={profile.city ?? ""} maxLength={80} className={`${field} mt-1`} />
-              </label>
-              {formError && <p role="alert" className="text-sm text-red-600">{formError}</p>}
-              <div className="flex gap-3">
-                <button className="cursor-pointer rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ink-hover">Guardar</button>
-                <button type="button" onClick={() => setEditing(false)} className="cursor-pointer text-sm font-semibold text-slate-600 underline">Cancelar</button>
-              </div>
-            </form>
-          ) : (
-            <ProfileDetails userId={profile.id} publicRows={publicRows} privateRows={privateRows} />
-          )}
-        </section>
+  const form = (
+    <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
+      <label className="sm:col-span-2">
+        <span className={label}>Nombre completo</span>
+        <input name="fullName" defaultValue={profile.fullName} required maxLength={120} className="field px-3 py-2.5" />
+      </label>
+      <label>
+        <span className={label}>Teléfono</span>
+        <input name="phone" type="tel" defaultValue={profile.phone ?? ""} maxLength={30} className="field px-3 py-2.5" />
+      </label>
+      <label>
+        <span className={label}>Ciudad</span>
+        <input name="city" defaultValue={profile.city ?? ""} maxLength={80} className="field px-3 py-2.5" />
+      </label>
+      <p className="text-xs text-slate-500 sm:col-span-2">El correo es el de tu cuenta de acceso y no se cambia desde aquí.</p>
+      {formError && <p role="alert" className="text-sm text-red-600 sm:col-span-2">{formError}</p>}
+      <div className="flex justify-end gap-3 border-t border-slate-100 pt-4 sm:col-span-2">
+        <button type="button" onClick={() => setEditing(false)} className="btn px-4 py-2 text-sm text-slate-600 hover:bg-slate-100">
+          Cancelar
+        </button>
+        <button disabled={saving} className="btn btn-primary px-4 py-2 text-sm">
+          {saving ? "Guardando…" : "Guardar cambios"}
+        </button>
       </div>
-    </main>
+    </form>
+  );
+
+  return (
+    <ProfileOverview
+      user={{ id: profile.id, fullName: profile.fullName, email: profile.email, avatar: initialsAvatar(profile.fullName), city: profile.city, joinedAt: profile.createdAt ? formatDate(profile.createdAt.slice(0, 10)) : null }}
+      details={editing ? form : <ProfileDetails userId={profile.id} publicRows={publicRows} privateRows={privateRows} />}
+      detailsAction={
+        !editing && (
+          <button type="button" onClick={() => setEditing(true)} className="btn btn-outline px-3 py-1.5 text-xs">
+            <ProfileIcon name="edit" className="h-3.5 w-3.5" />
+            Editar datos
+          </button>
+        )
+      }
+    />
   );
 }

@@ -20,7 +20,7 @@ function publishedLabel(date: string): string {
 }
 
 /** Características con dato real; las que valen 0 (p. ej. recámaras de una bodega) no se muestran. */
-function statsOf(p: ListedProperty): { icon: StatIconName; value: string; label: string }[] {
+export function statsOf(p: ListedProperty): { icon: StatIconName; value: string; label: string }[] {
   const isLand = p.type === "Terreno";
   const stats: { icon: StatIconName; value: string; label: string }[] = [];
   if (p.bedrooms > 0) stats.push({ icon: "bed", value: `${p.bedrooms} ${p.bedrooms === 1 ? "recámara" : "recámaras"}`, label: "Recámaras" });

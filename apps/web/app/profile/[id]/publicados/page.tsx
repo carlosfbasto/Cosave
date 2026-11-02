@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { AccountListings } from "@/components/user/account-listings";
 import { PropertyGrid } from "@/components/property-card";
+import { EmptyState, ProfileSection } from "@/components/user/profile-section";
 import { listedProperties } from "@/lib/mock-data";
 import { getMockUser } from "@/lib/mock-users";
 
@@ -12,22 +12,16 @@ export default async function PublishedPage({ params }: PageProps<"/profile/[id]
   const items = u.role === "buyer" ? [] : listedProperties.filter((p) => u.propertyCodes.includes(p.code));
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-6 py-10">
-      <header>
-        <h1 className="text-[20px] font-semibold text-ink">Publicados</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          {items.length === 0 ? "Aún no hay propiedades publicadas." : `${items.length} ${items.length === 1 ? "propiedad publicada" : "propiedades publicadas"}.`}
-        </p>
-      </header>
+    <ProfileSection
+      wide
+      title="Publicados"
+      description={items.length === 0 ? "Aún no hay propiedades publicadas." : `${items.length} ${items.length === 1 ? "propiedad publicada" : "propiedades publicadas"}.`}
+    >
       {items.length === 0 ? (
-        <div className="py-10 text-center">
-          <Link href="/vender" className="inline-block rounded-lg bg-ink px-5 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
-            Quiero vender mi propiedad
-          </Link>
-        </div>
+        <EmptyState icon="home" title="Sin propiedades publicadas" text="Publica tu casa, departamento, terreno o bodega y recibe consultas de personas interesadas." href="/vender" cta="Quiero vender mi propiedad" />
       ) : (
         <PropertyGrid items={items} cols={2} />
       )}
-    </main>
+    </ProfileSection>
   );
 }

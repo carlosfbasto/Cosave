@@ -2,7 +2,9 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapGestureHint } from "@/components/map-gesture-hint";
+import { controlledGestures } from "@/components/map-gestures";
 import { formatMxn, type ListedProperty } from "@/lib/mock-data";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -48,6 +50,7 @@ export function PropertiesMap({
   const markers = useRef(new Map<string, { marker: L.Marker; p: ListedProperty }>());
   const onSelectRef = useRef(onSelect);
   const activeRef = useRef(activeCode);
+  const [hint, setHint] = useState<string | null>(null);
   useEffect(() => {
     onSelectRef.current = onSelect;
   }, [onSelect]);
@@ -65,12 +68,15 @@ export function PropertiesMap({
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     map.on("popupclose", () => onSelectRef.current?.(null));
+    // La rueda y un dedo desplazan la página; el mapa se mueve con Ctrl + rueda o con dos dedos.
+    const release = controlledGestures(map, el.current, setHint);
     mapRef.current = map;
     // Al cambiar de vista o de tamaño de ventana el contenedor cambia de medida.
     const ro = new ResizeObserver(() => map.invalidateSize());
     ro.observe(el.current);
     return () => {
       ro.disconnect();
+      release();
       map.remove();
       mapRef.current = null;
       layerRef.current = null;
@@ -119,6 +125,7 @@ export function PropertiesMap({
         {withCoords.length} {withCoords.length === 1 ? "propiedad" : "propiedades"} en el mapa
         {missing > 0 && <span className="font-normal text-slate-500">· {missing} sin ubicación</span>}
       </p>
+      <MapGestureHint text={hint} />
     </div>
   );
 }

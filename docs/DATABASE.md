@@ -25,9 +25,10 @@ erDiagram
 |---|---|
 | **Profile** | Usuario (id = uuid de Supabase Auth), con teléfono y ciudad opcionales. Rol: comprador, vendedor, asesor, admin. |
 | **Professional** | Datos extra del asesor inmobiliario (empresa, licencia, verificado). |
-| **Property** | La propiedad: tipo, operación (venta/renta), estado, precio, `publicCode` (COS-000001). |
+| **Property** | La propiedad: tipo, operación (venta/renta), estado, precio, `maintenanceFee` (cuota mensual de mantenimiento; solo departamentos y propiedades en privada, si deja de aplicar el api la borra), `publicCode` (COS-000001). |
 | **PropertyLocation** | Estado, ciudad, zona, dirección, código postal (5 dígitos, opcional), coordenadas (`latitude`/`longitude`, elegidas en el mapa al publicar). Separada para indexar búsquedas por ciudad. |
-| **PropertyFeatures** | Recámaras, baños, estacionamientos, m² de terreno y construcción. |
+| **PropertyFeatures** | Recámaras, baños, estacionamientos, m² de terreno y construcción. `amenities` (características: alberca, andén de carga…) y `materials` (materiales de construcción) son listas `text[]` con **claves** del catálogo `AMENITIES` / `MATERIALS` de `packages/shared`; el api solo acepta claves del catálogo y descarta las que no aplican al tipo de inmueble. |
+| **PostalCode** | Catálogo de códigos postales de México (una fila por colonia: código, colonia, estado, municipio, ciudad y coordenadas aproximadas, que centran el mapa al escribir el código). Fuente: GeoNames (CC BY 4.0, se da crédito en el formulario). Se carga con `pnpm --filter @cosave/api db:postal-codes <MX.txt>` (descomprimir `https://download.geonames.org/export/zip/MX.zip`). Solo lectura para la app. |
 | **PropertyImage** | Ruta en Supabase Storage y orden de cada foto. |
 | **Favorite** | Usuario ↔ propiedad guardada (clave compuesta). |
 | **Inquiry** | Consulta "Me interesa": propiedad, remitente, mensaje, datos de contacto compartidos y estado (`pending` hasta que el anunciante responda, luego `answered`). |
@@ -57,6 +58,8 @@ erDiagram
 - `Property.reviewNote`: motivo de rechazo o aviso de posible duplicado. `submittedAt` / `publishedAt`: envío a revisión y primera publicación (ordena «últimos publicados»).
 - Fotos: `PropertyImage.storagePath` es la ruta en el bucket público `property-images` de Supabase Storage (o una ruta del web, `/img/…`, en las de ejemplo). La principal es la de `position = 0`.
 - Migraciones `20261012000000_codigo_postal_ubicacion`, `20261012010000_ciudad_perfil` y `20261012020000_publicar_propiedades`.
+- `PropertyType`: `house`, `apartment`, `land`, `commercial` (local comercial), `commercial_warehouse` (bodega comercial), `industrial_warehouse` (bodega industrial) y `other`. Las bodegas y las listas `amenities` / `materials` llegaron en `20261027000000_caracteristicas_materiales_bodegas` (solo agrega valores y columnas; no borra datos). `maintenanceFee` y `PostalCode` (con RLS) llegaron en `20261028000000_mantenimiento_codigos_postales`; las coordenadas del catálogo, en `20261028010000_coordenadas_codigos_postales`, y el índice `(state, municipality)` para el recuadro del municipio, en `20261028020000_indice_municipio_codigos_postales`.
+- El código postal es obligatorio para enviar a revisión; estado y ciudad se toman del catálogo `PostalCode`, no se escriben a mano. La colonia se elige de la lista del código o se escribe («Otra») si es un fraccionamiento nuevo.
 - `Favorite` tiene clave `(userId, propertyId)`: guardar dos veces no duplica.
 - Los datos de contacto de `Inquiry` se copian del formulario (lo que la persona decidió compartir), no del perfil.
 - Migración `20261009000000_favoritos_consultas`. Propiedades de ejemplo: `pnpm --filter @cosave/api db:seed`.

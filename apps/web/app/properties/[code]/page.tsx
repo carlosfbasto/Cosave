@@ -6,10 +6,11 @@ import { Advertiser } from "@/components/property-detail/advertiser";
 import { BackButton } from "@/components/back-button";
 import { PhotoMosaic } from "@/components/property-detail/photo-mosaic";
 import { ShareButton } from "@/components/property-detail/share-button";
-import { PropertyShowcaseCard } from "@/components/home/property-showcase-card";
-import { UNAVAILABLE_LABEL } from "@cosave/shared";
+import { ShowcaseGrid } from "@/components/home/property-showcase-card";
+import { LocationMapView } from "@/components/property-detail/location-map-view";
+import { AMENITY_LABEL, MATERIAL_LABEL, UNAVAILABLE_LABEL } from "@cosave/shared";
 import { fetchCatalog, fetchProperty } from "@/lib/catalog";
-import { cityCoords, detailsFor, formatMxn, galleryFor, similarTo, slugify } from "@/lib/mock-data";
+import { cityCoords, formatMxn, galleryFor, paragraphsFor, similarTo, slugify } from "@/lib/mock-data";
 import { advertiserOf } from "@/lib/mock-users";
 
 /** Vista previa al compartir el enlace (título, descripción e imagen de la propiedad). */
@@ -53,11 +54,12 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
   const isRent = p.operation === "rent";
   const where = [p.zone && !demo ? p.zone : null, p.city, p.state].filter(Boolean).join(", ");
   const info = `${isRent ? "En Renta" : "En Venta"} | ${p.type} | ${p.city}, ${p.state}${p.area ? ` | ${p.area.toLocaleString("es-MX")} m²` : ""}`;
-  const d = demo ? detailsFor(p) : null;
-  const paragraphs = d ? d.paragraphs : p.description ? p.description.split(/\n{2,}/) : [];
+  const paragraphs = demo ? paragraphsFor(p) : p.description ? p.description.split(/\n{2,}/) : [];
+  const amenities = p.amenities.map((a) => AMENITY_LABEL[a]).filter(Boolean);
+  const materials = p.materials.map((m) => MATERIAL_LABEL[m]).filter(Boolean);
   const advertiser = demo ? advertiserOf(p.code) : undefined;
   const catalog = (await fetchCatalog()).items;
-  const similar = similarTo(p, catalog).slice(0, 3);
+  const similar = similarTo(p, catalog).slice(0, 4);
   const sameKind = catalog.filter((o) => o.code !== p.code && o.type === p.type && o.operation === p.operation).length;
   const listHref = isRent ? "/properties/rentals" : "/properties/sale";
 
@@ -66,10 +68,6 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
   const lat = typeof p.latitude === "number" ? p.latitude : c ? c.lat + (p.map.y - 50) / 2000 : null;
   const lon = typeof p.longitude === "number" ? p.longitude : c ? c.lon + (p.map.x - 50) / 2000 : null;
   const exact = typeof p.latitude === "number";
-  const mapSrc =
-    lat !== null && lon !== null
-      ? `https://www.openstreetmap.org/export/embed.html?bbox=${[lon - 0.012, lat - 0.008, lon + 0.012, lat + 0.008].join("%2C")}&layer=mapnik&marker=${lat}%2C${lon}`
-      : null;
 
   const rows: [string, string][] = [
     ["Tipo", p.type],
@@ -79,6 +77,7 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
     ...(p.bedrooms ? ([["Recámaras", String(p.bedrooms)]] as [string, string][]) : []),
     ...(p.bathrooms ? ([["Baños", String(p.bathrooms)]] as [string, string][]) : []),
     ...(p.parkingSpots ? ([["Estacionamientos", String(p.parkingSpots)]] as [string, string][]) : []),
+    ...(p.maintenanceFee ? ([["Mantenimiento", `${formatMxn(p.maintenanceFee)} MXN /mes`]] as [string, string][]) : []),
     ["Clave", p.code],
   ];
 
@@ -194,30 +193,34 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
                 ))}
               </dl>
 
-              {d && (
+              {(amenities.length > 0 || materials.length > 0) && (
                 <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                  <div>
-                    <h2 className="headline-sm mb-3 text-ink">Características</h2>
-                    <ul className="flex flex-wrap gap-2">
-                      {d.features.map((f) => <li key={f} className="label-sm rounded-md bg-slate-100 px-2.5 py-1.5 text-slate-600">{f}</li>)}
-                    </ul>
-                  </div>
-                  <div>
-                    <h2 className="headline-sm mb-3 text-ink">Materiales de construcción</h2>
-                    <ul className="flex flex-wrap gap-2">
-                      {d.materials.map((m) => <li key={m} className="label-sm rounded-md bg-slate-100 px-2.5 py-1.5 text-slate-600">{m}</li>)}
-                    </ul>
-                  </div>
+                  {amenities.length > 0 && (
+                    <div>
+                      <h2 className="headline-sm mb-3 text-ink">Características</h2>
+                      <ul className="flex flex-wrap gap-2">
+                        {amenities.map((f) => <li key={f} className="label-sm rounded-md bg-slate-100 px-2.5 py-1.5 text-slate-600">{f}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {materials.length > 0 && (
+                    <div>
+                      <h2 className="headline-sm mb-3 text-ink">Materiales de construcción</h2>
+                      <ul className="flex flex-wrap gap-2">
+                        {materials.map((m) => <li key={m} className="label-sm rounded-md bg-slate-100 px-2.5 py-1.5 text-slate-600">{m}</li>)}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
 
-            {mapSrc && (
+            {lat !== null && lon !== null && (
               <section className={card}>
                 <h2 className="headline-sm mb-4 text-ink">Ubicación</h2>
                 <div className="relative overflow-hidden rounded-xl border border-slate-200">
-                  <iframe title={`Mapa de ${p.title}`} src={mapSrc} loading="lazy" className="block h-80 w-full border-0" />
-                  <div className="pointer-events-none absolute left-3 top-3 max-w-xs rounded-lg bg-white/95 p-3 shadow-glow ring-1 ring-slate-200 backdrop-blur-md">
+                  <LocationMapView lat={lat} lng={lon} exact={exact} />
+                  <div className="pointer-events-none absolute left-3 top-3 z-[500] max-w-xs rounded-lg bg-white/95 p-3 shadow-glow ring-1 ring-slate-200 backdrop-blur-md">
                     <p className="text-sm font-semibold text-ink">{where}</p>
                     {!exact && <p className="text-xs text-slate-500">Ubicación aproximada</p>}
                   </div>
@@ -243,9 +246,8 @@ export default async function PropertyDetailPage({ params }: PageProps<"/propert
                 </Link>
               )}
             </div>
-            <div className="grid gap-6 md:grid-cols-3">
-              {similar.map((s) => <PropertyShowcaseCard key={s.code} p={s} />)}
-            </div>
+            <ShowcaseGrid items={similar} />
+
           </div>
         </section>
       )}

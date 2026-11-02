@@ -1,8 +1,9 @@
 import type { Prisma, PropertyStatus } from "@prisma/client";
-import { FEATURE_FIELDS_BY_TYPE, IMAGE_LIMITS, propertyDraftSchema, REQUIRED_FIELD_LABEL, type PropertyPatch } from "@cosave/shared";
+import { amenitiesFor, FEATURE_FIELDS_BY_TYPE, IMAGE_LIMITS, materialsFor, needsMaintenanceFee, propertyDraftSchema, REQUIRED_FIELD_LABEL, type PropertyPatch } from "@cosave/shared";
 import { auditCreate, type AuditEntry } from "./audit.js";
 import { env } from "./env.js";
 import { HttpError } from "./errors.js";
+import { lookupPostalCode } from "./postal-codes.js";
 import { prisma } from "./prisma.js";
 import { propertyInclude, type PropertyRow } from "./property-view.js";
 
@@ -24,6 +25,7 @@ export function currentValues(p: PropertyRow): Record<string, unknown> {
     title: p.title,
     description: p.description,
     price: Number(p.price),
+    maintenanceFee: p.maintenanceFee === null ? null : Number(p.maintenanceFee),
     state: p.location?.state,
     city: p.location?.city,
     zone: p.location?.zone,
@@ -36,11 +38,27 @@ export function currentValues(p: PropertyRow): Record<string, unknown> {
     parkingSpots: p.features?.parkingSpots,
     landAreaM2: p.features?.landAreaM2,
     builtAreaM2: p.features?.builtAreaM2,
+    amenities: p.features?.amenities ?? [],
+    materials: p.features?.materials ?? [],
   };
 }
 
-/** Arma los datos de escritura a partir de un parche (null borra, undefined no toca). */
-export function writeData(patch: PropertyPatch, type: PropertyRow["type"]) {
+/**
+ * El código postal manda: estado y ciudad se toman del catálogo (no se aceptan escritos a mano).
+ * Responde 422 si el código no existe.
+ */
+export async function withPostalCode<T extends PropertyPatch>(patch: T): Promise<T> {
+  if (!patch.postalCode) return patch;
+  const info = await lookupPostalCode(patch.postalCode);
+  if (!info) throw new HttpError(422, "unknown_postal_code", "No encontramos ese código postal. Revisa que esté bien escrito.", { fields: ["postalCode"] });
+  return { ...patch, state: info.state, city: info.city };
+}
+
+/**
+ * Arma los datos de escritura a partir de un parche (null borra, undefined no toca).
+ * `amenities`: las características vigentes, para saber si aplica la cuota de mantenimiento.
+ */
+export function writeData(patch: PropertyPatch, type: PropertyRow["type"], amenities: readonly string[] = []) {
   const allowed = new Set<string>(FEATURE_FIELDS_BY_TYPE[type]);
   const location: Record<string, unknown> = {};
   const features: Record<string, unknown> = {};
@@ -48,7 +66,17 @@ export function writeData(patch: PropertyPatch, type: PropertyRow["type"]) {
   for (const k of FEATURES) if (patch[k] !== undefined) features[k] = allowed.has(k) ? patch[k] : null;
   // Un tipo sin esa característica (p. ej. terreno sin recámaras) no la conserva.
   if (patch.type) for (const k of FEATURES) if (!allowed.has(k)) features[k] = null;
+  // Características y materiales: solo las que aplican al tipo.
+  if (patch.amenities) features["amenities"] = patch.amenities.filter((a) => amenitiesFor(type).includes(a));
+  if (patch.materials) features["materials"] = patch.materials.filter((m) => materialsFor(type).includes(m));
+  // Mantenimiento: solo departamentos y propiedades en privada; si deja de aplicar, se borra.
+  const fee = needsMaintenanceFee(type, (features["amenities"] as string[] | undefined) ?? amenities)
+    ? patch.maintenanceFee
+    : patch.maintenanceFee !== undefined || patch.type || patch.amenities
+      ? null
+      : undefined;
   const property: Prisma.PropertyUpdateInput = {
+    ...(fee !== undefined && { maintenanceFee: fee }),
     ...(patch.operation && { operation: patch.operation }),
     ...(patch.type && { type: patch.type }),
     ...(patch.title !== undefined && { title: patch.title }),
