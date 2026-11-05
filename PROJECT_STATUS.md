@@ -1,6 +1,6 @@
 # Estado del proyecto COSAVE
 
-**Última actualización:** 4 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 de noviembre) · **Rama de trabajo:** `integracion/m0a-rediseno` (6 commits por delante de `main`, publicada en el remoto con PR abierto hacia `main`; `main` y `origin/main` siguen en `5d8cef0`).
+**Última actualización:** 4 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 de noviembre) · **Rama de trabajo:** `docs/estado-post-m2b`. `main` y `origin/main` están en `49e20f4`, que fusiona el PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b).
 
 Este archivo es el **estado vivo** del proyecto. No repite el roadmap ni la documentación técnica: los resume y enlaza. Si algo aquí contradice a `README.md` o a `docs/`, revisar ambos y corregir el que esté desactualizado.
 
@@ -153,7 +153,7 @@ De `docs/DECISIONS.md` y de la sesión:
 | Riesgo / dependencia | Detalle |
 |---|---|
 | **Cambios sin commit** | Ninguno al momento de esta actualización: M2b está confirmado (`16ebd35`). La devDependency `@electric-sql/pglite` queda incluida y sigue pendiente de tu confirmación expresa. |
-| **Rama sin integrar** | Los rediseños de publicación y perfil y M2b viven en `integracion/m0a-rediseno`, ya publicada en el remoto con un PR abierto, pero aún sin fusionar en `main`. |
+| **Rama sin integrar** | Ninguna: el PR #7 se fusionó en `main` el 5-nov-2026 (UTC) sin revisión ni verificaciones automáticas; solo se corrieron a mano `typecheck`, `lint`, `build` y las pruebas del api. |
 | **Sin límite de peticiones** | Ningún endpoint del api tiene rate limiting, incluido el público `GET /postal-codes/:code`. Pendiente para la Etapa 6. |
 | **`sharp`** | Librería nativa: el despliegue debe instalar sus binarios en la plataforma destino y probarse antes del lanzamiento. |
 | **Catálogo de códigos postales** | Sin él, `GET /postal-codes/:code` da 404 y guardar una propiedad falla con 422. Hoy está cargado en el proyecto `cosave`. En cualquier BD nueva hay que correr `pnpm --filter @cosave/api db:postal-codes <MX.txt>`. |
