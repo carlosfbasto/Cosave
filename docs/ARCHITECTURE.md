@@ -24,7 +24,7 @@ flowchart LR
 4. `Profile.id` es el mismo uuid que `auth.users.id`; el api crea el perfil en el primer acceso (upsert en `requireAuth`). El **rol** se lee de la BD, no del token; `requireRole(...)` protege rutas de admin.
 
 ## Visitante vs. usuario registrado
-Cualquiera explora sin cuenta (`/`, `/propiedades`). Al intentar **comprar o vender** (contactar, guardar búsqueda, favoritos, `/vender`) se exige cuenta:
+Cualquiera explora sin cuenta (`/`, `/properties`). Al intentar **comprar o vender** (contactar, guardar búsqueda, favoritos, `/vender`) se exige cuenta:
 - Enlaces a acciones protegidas usan `AuthLink`: sin sesión van a `/login?next=<destino>&volver=<página actual>` ("← Volver" regresa a `volver`).
 - Páginas protegidas usan `RequireAuth`: sin sesión redirigen a `/login?next=<ruta>`.
 - Tras entrar, se regresa a `next` (solo rutas internas, ver `safeNext`).

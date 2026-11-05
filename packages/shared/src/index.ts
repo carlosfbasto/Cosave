@@ -1,20 +1,21 @@
 import { z } from "zod";
+import { operationTypeSchema, propertyTypeSchema, type OperationType, type PropertyType } from "./property-enums.js";
+
+// Tipo de inmueble y operación (con PROPERTY_TYPE_LABEL) viven en ./property-enums.ts; búsqueda del catálogo, en los demás.
+export * from "./property-enums.js";
+export * from "./text-search.js";
+export * from "./property-search.js";
+export * from "./search-facets.js";
 
 export const USER_ROLES = ["buyer", "seller", "agent", "admin"] as const;
-export const PROPERTY_TYPES = ["house", "land", "apartment", "commercial", "commercial_warehouse", "industrial_warehouse", "other"] as const;
-export const OPERATION_TYPES = ["sale", "rent"] as const;
 export const PROPERTY_STATUSES = ["draft", "pending", "published", "paused", "sold", "rented", "rejected", "archived"] as const;
 export const INQUIRY_STATUSES = ["pending", "answered"] as const;
 
 export const userRoleSchema = z.enum(USER_ROLES);
-export const propertyTypeSchema = z.enum(PROPERTY_TYPES);
-export const operationTypeSchema = z.enum(OPERATION_TYPES);
 export const propertyStatusSchema = z.enum(PROPERTY_STATUSES);
 export const inquiryStatusSchema = z.enum(INQUIRY_STATUSES);
 
 export type UserRole = z.infer<typeof userRoleSchema>;
-export type PropertyType = z.infer<typeof propertyTypeSchema>;
-export type OperationType = z.infer<typeof operationTypeSchema>;
 export type PropertyStatus = z.infer<typeof propertyStatusSchema>;
 export type InquiryStatus = z.infer<typeof inquiryStatusSchema>;
 
@@ -27,17 +28,6 @@ export const UNAVAILABLE_LABEL: Partial<Record<PropertyStatus, string>> = {
   rented: "Rentada",
   paused: "Pausada",
   archived: "Retirada",
-};
-
-/** Nombre de cada tipo de inmueble para el usuario. */
-export const PROPERTY_TYPE_LABEL: Record<PropertyType, string> = {
-  house: "Casa",
-  apartment: "Departamento",
-  land: "Terreno",
-  commercial: "Local comercial",
-  commercial_warehouse: "Bodega comercial",
-  industrial_warehouse: "Bodega industrial",
-  other: "Otro",
 };
 
 export const INQUIRY_STATUS_LABEL: Record<InquiryStatus, string> = {

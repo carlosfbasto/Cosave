@@ -1,8 +1,17 @@
 import { Router } from "express";
 import { z } from "zod";
-import { inquiryInputSchema, operationTypeSchema, propertyTypeSchema } from "@cosave/shared";
+import {
+  inquiryInputSchema,
+  mapQuerySchema,
+  operationTypeSchema,
+  propertySearchQuerySchema,
+  propertyTypeSchema,
+  searchFiltersSchema,
+} from "@cosave/shared";
 import { handler, HttpError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
+import { runFacets, runMapSearch, runPropertySearch } from "../lib/property-search.js";
+import { imageUrl } from "../lib/storage.js";
 import { requireAuth } from "../middleware/auth.js";
 import { propertyInclude, publicView } from "../lib/property-view.js";
 
@@ -69,6 +78,55 @@ propertiesRouter.get(
       include: propertyInclude,
     });
     res.json({ data: rows.map(publicView), meta: { total: rows.length } });
+  }),
+);
+
+/**
+ * Catálogo paginado con filtros, texto libre y orden en el servidor (lo usa el explorador de /properties).
+ * `GET /` y `GET /catalog` siguen igual. Debe declararse antes de `/:code`.
+ */
+propertiesRouter.get(
+  "/search",
+  handler(async (req, res) => {
+    const query = propertySearchQuerySchema.parse(req.query);
+    const { ids, total, totalPages } = await runPropertySearch((sql) => prisma.$queryRaw(sql), query);
+    const rows = ids.length
+      ? await prisma.property.findMany({ where: { id: { in: ids }, status: "published" }, include: propertyInclude })
+      : [];
+    // `findMany` no conserva el orden pedido: se reordena con el de la consulta SQL.
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    const data = ids.flatMap((id) => byId.get(id) ?? []).map(publicView);
+    res.set("Cache-Control", "public, max-age=15");
+    res.json({ data, meta: { page: query.page, pageSize: query.pageSize, total, totalPages } });
+  }),
+);
+
+/**
+ * Opciones de filtro con sus conteos: cada grupo (estado, ciudad, zona, tipo) cuenta ignorando su propio filtro y
+ * conservando los demás. Sin filtros devuelve todas las opciones publicadas (el web las usa para leer los slugs de la URL).
+ */
+propertiesRouter.get(
+  "/search/facets",
+  handler(async (req, res) => {
+    const filters = searchFiltersSchema.parse(req.query);
+    const { data, meta } = await runFacets((sql) => prisma.$queryRaw(sql), filters);
+    res.set("Cache-Control", "public, max-age=15");
+    res.json({ data, meta });
+  }),
+);
+
+/**
+ * Puntos del mapa con exactamente los mismos filtros que la lista (no pagina). `bbox` (sur,oeste,norte,este) acota los puntos
+ * al recuadro visible. `meta` explica cualquier diferencia entre `total` y `returned`: nada se omite en silencio.
+ */
+propertiesRouter.get(
+  "/search/map",
+  handler(async (req, res) => {
+    const query = mapQuerySchema.parse(req.query);
+    const { rows, meta } = await runMapSearch((sql) => prisma.$queryRaw(sql), query);
+    const data = rows.map(({ id: _id, imagePath, ...point }) => ({ ...point, image: imagePath ? imageUrl(imagePath) : null }));
+    res.set("Cache-Control", "public, max-age=15");
+    res.json({ data, meta });
   }),
 );
 
