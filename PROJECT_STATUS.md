@@ -1,6 +1,6 @@
 # Estado del proyecto COSAVE
 
-**Última actualización:** 5 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 y 5 de noviembre) · **Rama de trabajo:** `docs/estado-post-admin-rediseno`. `main` y `origin/main` están en `2712b51`, que fusiona el PR #9 (`feature/admin-rediseno`: rediseño del panel admin, panel de revisión de propiedades y avisos `in_app` al dueño). El PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b) y el PR #8 también están en `main`.
+**Última actualización:** 5 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 y 5 de noviembre) · **Rama de trabajo:** `docs/estado-ramas`. `main` y `origin/main` están en `0abdca3` (PR #10, solo documentación). Lo último de código que entró es el PR #9 (`feature/admin-rediseno`: rediseño del panel admin, panel de revisión de propiedades y avisos `in_app` al dueño). El PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b) y el PR #8 también están en `main`.
 
 Este archivo es el **estado vivo** del proyecto. No repite el roadmap ni la documentación técnica: los resume y enlaza. Si algo aquí contradice a `README.md` o a `docs/`, revisar ambos y corregir el que esté desactualizado.
 
@@ -160,14 +160,14 @@ De `docs/DECISIONS.md` y de la sesión:
 - **Comparador (Etapa 4):** ¿solo en el cliente (localStorage) o guardado en la cuenta? Afecta si hay cambio de BD.
 - **Paginación y filtros en el servidor (Etapa 3):** el api ya los ofrece en `/properties/search*` sin cambiar `GET /properties` ni `/catalog`. Falta decidir cuándo migrar el web y confirmar la devDependency `@electric-sql/pglite`.
 - **Licencia del proyecto:** el `README.md` aún tiene `[elegir: MIT, Apache 2.0, etc.]`.
-- **Qué hacer con las ramas ya fusionadas** `integracion/m0a-rediseno` y `feature/admin-rediseno`: borrarlas (remota y local) o conservarlas.
+- **Qué hacer con las ramas que quedan:** `feature/primera-etapa` (local y remota) **no está fusionada en `main`** y no se revisó su contenido; `backup/main-antes-de-integrar` (solo local) es una copia de seguridad previa a una integración. Decidir si se conservan, se fusionan o se borran. Las demás ramas ya fusionadas (`integracion/m0a-rediseno`, `feature/admin-rediseno`, `docs/estado-post-admin-rediseno` y siete `feature/*` anteriores) se borraron el 5-nov-2026, en local y en `origin`; sus commits siguen en `main`.
 
 ## 9. Riesgos y dependencias
 
 | Riesgo / dependencia | Detalle |
 |---|---|
 | **Cambios sin commit** | Ninguno al momento de esta actualización: el rediseño del panel, el panel de revisión y los avisos `in_app` están confirmados y fusionados (PR #9, `2712b51`). La devDependency `@electric-sql/pglite` sigue pendiente de tu confirmación expresa. |
-| **Rama sin integrar** | Ninguna: los PR #7 y #9 ya están en `main` (ambos fusionados el 5-nov-2026, UTC). No hay verificaciones automáticas configuradas (el PR #9 mostró 0 checks); solo se corrieron a mano `typecheck`, `lint`, `build` y las pruebas del api. |
+| **Rama sin integrar** | Una: `feature/primera-etapa` (local y remota) no está fusionada en `main`; no se revisó qué contiene. Las demás ramas de trabajo ya están en `main` (los PR #7 y #9 se fusionaron el 5-nov-2026, UTC). No hay verificaciones automáticas configuradas (el PR #9 mostró 0 checks); solo se corrieron a mano `typecheck`, `lint`, `build` y las pruebas del api. |
 | **Sin límite de peticiones** | Ningún endpoint del api tiene rate limiting, incluido el público `GET /postal-codes/:code`. Pendiente para la Etapa 6. |
 | **`sharp`** | Librería nativa: el despliegue debe instalar sus binarios en la plataforma destino y probarse antes del lanzamiento. |
 | **Catálogo de códigos postales** | Sin él, `GET /postal-codes/:code` da 404 y guardar una propiedad falla con 422. Hoy está cargado en el proyecto `cosave`. En cualquier BD nueva hay que correr `pnpm --filter @cosave/api db:postal-codes <MX.txt>`. |
