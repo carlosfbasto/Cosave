@@ -1,5 +1,5 @@
 /** Datos FICTICIOS solo para diseñar la portada. Se reemplazarán por datos del api (Etapa 3). */
-import { amenitiesFor, type Amenity, type Material, type PropertyType as DbType } from "@cosave/shared";
+import { amenitiesFor, slugify, type Amenity, type Material, type PropertyType as DbType } from "@cosave/shared";
 
 export interface MockProperty {
   code: string;
@@ -165,9 +165,8 @@ export const listedProperties: ListedProperty[] = [
 export const states = ["Yucatán"] as const;
 export const zones = ["Centro", "Norte", "Sur", "Oriente", "Zona industrial"] as const;
 
-/** "Mérida" → "merida": valor estable para usar en la URL (?ciudad=merida). */
-export const slugify = (s: string) =>
-  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+// `slugify` vive en `packages/shared` ("Mérida" → "merida": valor estable para la URL, ?ciudad=merida).
+export { slugify };
 
 const countBy = (key: "type" | "city", value: string) => listedProperties.filter((p) => p[key] === value).length;
 

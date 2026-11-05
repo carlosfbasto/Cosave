@@ -79,7 +79,8 @@ cosave/
 │       ├── src/{routes,controllers,middleware,lib}
 │       └── prisma/schema.prisma
 ├── packages/shared/         # Enums y esquemas zod compartidos
-├── docs/                    # ARCHITECTURE, DATABASE, API, DECISIONS, CONTRIBUTING
+├── docs/                    # ARCHITECTURE, DATABASE, API, DECISIONS, DESIGN, CONTRIBUTING
+├── PROJECT_STATUS.md        # Estado vivo: qué está verificado, pendiente y decidido
 ├── AGENTS.md  CLAUDE.md     # Reglas del proyecto
 ├── turbo.json  pnpm-workspace.yaml  .env.example
 ```
@@ -145,6 +146,8 @@ Cuando un usuario dice "no encontré, pero busco esto":
 
 ## 🗺️ Etapas de desarrollo (Roadmap)
 
+> El estado detallado y verificado de cada etapa (qué se probó, qué falta y qué riesgos hay) está en **[PROJECT_STATUS.md](./PROJECT_STATUS.md)**.
+
 Contrastado con el *Documento Técnico-Funcional y Modelo de Negocio* (secciones 20 y 44). Las etapas 1–6 son el MVP; las fases A–C son el crecimiento posterior al lanzamiento.
 
 ### MVP
@@ -153,7 +156,7 @@ Contrastado con el *Documento Técnico-Funcional y Modelo de Negocio* (secciones
 |---|---|---|
 | **Fase 0** | Arquitectura, planos, stack | ✅ Completa |
 | **Etapa 1** | Base de datos, usuarios, roles, admin | 🔄 Migraciones aplicadas en Supabase; usuarios, roles, panel admin y bitácora de auditoría (`AuditLog`) funcionando. Falta: respaldos y su pantalla en el panel admin |
-| **Etapa 2** | Publicar propiedades, fotos, revisión | 🔄 Publicar, fotos, revisión, Mis propiedades, panel admin, estados y aviso de duplicados; bucket `property-images` creado. Falta: probar la subida de fotos de punta a punta, videos / recorridos virtuales, tipos *local, oficina, bodega, rancho* y amenidades |
+| **Etapa 2** | Publicar propiedades, fotos, revisión | 🔄 Publicar, fotos, revisión, Mis propiedades, panel admin, estados y aviso de duplicados; bucket `property-images` creado. También hay tipos de bodega (comercial e industrial), características y materiales, cuota de mantenimiento y catálogo de códigos postales (`PostalCode`). Falta: probar la subida de fotos de punta a punta, videos / recorridos virtuales y los tipos *oficina y rancho* |
 | **Etapa 3** | Buscador, filtros, resultados, mapa | 🔄 Listado, ficha, portada y mapa leen del api; falta paginar/filtrar en el servidor (hoy el catálogo carga hasta 500), filtrar por zona/estado/características y por el área visible del mapa |
 | **Etapa 4** | Favoritos, comparador, contacto | 🔄 Favoritos y consultas funcionando. **Falta el comparador** |
 | **Etapa 5** | "No encontré lo que busco", asesores, "Quiero vender" | 🔄 Búsquedas guardadas y **coincidencias**: al aprobar una propiedad se avisa en la app (campana) a quien tenga una búsqueda que coincida. Faltan: perfil y alta de asesor (con revisión COSAVE), directorio de asesores (el cliente elige), solicitudes de venta/servicios, leads para asesores, avisos por email (Resend) |
@@ -229,6 +232,8 @@ Si encuentras un bug o error:
 
 ## 📖 Documentación adicional
 
+- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** — Estado actual del proyecto, pruebas, riesgos y próximas actividades
+
 - **[DATABASE.md](./docs/DATABASE.md)** — Explicación detallada de todas las tablas
 - **[API.md](./docs/API.md)** — Listado de endpoints y cómo usarlos
 - **[CLAUDE.md](./CLAUDE.md)** — Reglas para colaborar con IA
@@ -279,5 +284,5 @@ Este proyecto está bajo licencia [elegir: MIT, Apache 2.0, etc.].
 
 ---
 
-**Última actualización:** Octubre 2026
-**Versión:** 1.0 (Fase 0)
+**Última actualización:** Noviembre 2026
+**Estado:** MVP en desarrollo (Etapas 1 a 5 en curso; ver el roadmap y `PROJECT_STATUS.md`)

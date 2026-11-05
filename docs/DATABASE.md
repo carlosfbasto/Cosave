@@ -1,6 +1,6 @@
 # Modelo de datos
 
-Fuente de verdad: `apps/api/prisma/schema.prisma` (borrador de Fase 0, sin migrar hasta la Etapa 1).
+Fuente de verdad: `apps/api/prisma/schema.prisma`. Las migraciones viven en `apps/api/prisma/migrations/` (13 en el repositorio; ver «Estado de las migraciones»).
 
 ```mermaid
 erDiagram
@@ -10,6 +10,7 @@ erDiagram
   Property ||--o| PropertyLocation : tiene
   Property ||--o| PropertyFeatures : tiene
   Property ||--o{ PropertyImage : tiene
+  Property ||--o{ PropertyStatusEvent : "registra cambios de estado"
   Profile ||--o{ Favorite : guarda
   Property ||--o{ Favorite : "es guardada"
   Profile ||--o{ Inquiry : envía
@@ -19,6 +20,10 @@ erDiagram
   Property ||--o{ SearchMatch : coincide
   Profile ||--o{ SellerRequest : solicita
   Profile ||--o{ Notification : recibe
+  %% Tablas sin relación (clave foránea) con otras: PostalCode es un catálogo de consulta;
+  %% AuditLog guarda actorId/entityId sin FK a propósito, para sobrevivir al borrado de perfiles y propiedades.
+  PostalCode
+  AuditLog
 ```
 
 | Tabla | Para qué sirve |
@@ -26,7 +31,7 @@ erDiagram
 | **Profile** | Usuario (id = uuid de Supabase Auth), con teléfono y ciudad opcionales. Rol: comprador, vendedor, asesor, admin. |
 | **Professional** | Datos extra del asesor inmobiliario (empresa, licencia, verificado). |
 | **Property** | La propiedad: tipo, operación (venta/renta), estado, precio, `maintenanceFee` (cuota mensual de mantenimiento; solo departamentos y propiedades en privada, si deja de aplicar el api la borra), `publicCode` (COS-000001). |
-| **PropertyLocation** | Estado, ciudad, zona, dirección, código postal (5 dígitos, opcional), coordenadas (`latitude`/`longitude`, elegidas en el mapa al publicar). Separada para indexar búsquedas por ciudad. |
+| **PropertyLocation** | Estado, ciudad, zona, dirección, código postal (5 dígitos; opcional en borrador, obligatorio para enviar a revisión), coordenadas (`latitude`/`longitude`, elegidas en el mapa al publicar). Separada para indexar búsquedas por ciudad. |
 | **PropertyFeatures** | Recámaras, baños, estacionamientos, m² de terreno y construcción. `amenities` (características: alberca, andén de carga…) y `materials` (materiales de construcción) son listas `text[]` con **claves** del catálogo `AMENITIES` / `MATERIALS` de `packages/shared`; el api solo acepta claves del catálogo y descarta las que no aplican al tipo de inmueble. |
 | **PostalCode** | Catálogo de códigos postales de México (una fila por colonia: código, colonia, estado, municipio, ciudad y coordenadas aproximadas, que centran el mapa al escribir el código). Fuente: GeoNames (CC BY 4.0, se da crédito en el formulario). Se carga con `pnpm --filter @cosave/api db:postal-codes <MX.txt>` (descomprimir `https://download.geonames.org/export/zip/MX.zip`). Solo lectura para la app. |
 | **PropertyImage** | Ruta en Supabase Storage y orden de cada foto. |
@@ -45,6 +50,28 @@ erDiagram
 - `SavedSearch(active, operation, propertyType, city)` — matching al publicar.
 - `Notification(userId, channel, createdAt)` — campana: avisos de una persona, más recientes primero.
 - `AuditLog(entityType, entityId, createdAt)`, `AuditLog(actorId, createdAt)` y `AuditLog(createdAt)` — historial de una entidad, de una persona y lo más reciente.
+
+## Estado de las migraciones
+
+Hay **13 migraciones en el repositorio**. Del total, **8 se comprobaron como aplicadas** en el proyecto Supabase `cosave` el 2 de noviembre de 2026, con una consulta de solo lectura a `_prisma_migrations` (terminadas y sin revertir). Las otras 5 **no se consultaron**: se asumen aplicadas porque las posteriores dependen de ellas, pero no están verificadas.
+
+| Migración | En el repo | Aplicada en Supabase |
+|---|---|---|
+| `20261004000000_init` | ✅ | No consultada |
+| `20261009000000_favoritos_consultas` | ✅ | No consultada |
+| `20261012000000_codigo_postal_ubicacion` | ✅ | No consultada |
+| `20261012010000_ciudad_perfil` | ✅ | No consultada |
+| `20261012020000_publicar_propiedades` | ✅ | No consultada |
+| `20261025000000_notificaciones_in_app` | ✅ | ✅ Comprobada |
+| `20261025010000_auditoria` | ✅ | ✅ Comprobada |
+| `20261025020000_rls_tablas_publicas` | ✅ | ✅ Comprobada |
+| `20261025030000_audit_search_path` | ✅ | ✅ Comprobada |
+| `20261027000000_caracteristicas_materiales_bodegas` | ✅ | ✅ Comprobada |
+| `20261028000000_mantenimiento_codigos_postales` | ✅ | ✅ Comprobada |
+| `20261028010000_coordenadas_codigos_postales` | ✅ | ✅ Comprobada |
+| `20261028020000_indice_municipio_codigos_postales` | ✅ | ✅ Comprobada |
+
+Esa consulta confirmó además que existen en la BD las columnas y los índices de las migraciones del 27 y 28 de octubre, y que `PostalCode`, `Property` y `PropertyFeatures` tienen RLS activo. **No se revisó una por una** la RLS de las demás tablas. El comando `list_migrations` de Supabase aparece vacío porque Prisma guarda su historial en `_prisma_migrations`, no en el registro propio de Supabase.
 
 ## Seguridad
 - **RLS activado en todas las tablas de `public`, sin políticas** (migración `20261025020000_rls_tablas_publicas`). La API REST de Supabase (llave pública `anon` / `authenticated`) no puede leer ni escribir nada; todo pasa por `apps/api`, que se conecta como `postgres` (dueño de las tablas, con `BYPASSRLS`). El aviso "RLS Enabled No Policy" del linter de Supabase es intencional.
