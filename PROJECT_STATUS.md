@@ -1,6 +1,6 @@
 # Estado del proyecto COSAVE
 
-**Última actualización:** 4 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 de noviembre) · **Rama de trabajo:** `integracion/m0a-rediseno` (4 commits por delante de `main`, sin PR abierto; `main` y `origin/main` están en `5d8cef0`).
+**Última actualización:** 4 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 de noviembre) · **Rama de trabajo:** `integracion/m0a-rediseno` (6 commits por delante de `main`, publicada en el remoto con PR abierto hacia `main`; `main` y `origin/main` siguen en `5d8cef0`).
 
 Este archivo es el **estado vivo** del proyecto. No repite el roadmap ni la documentación técnica: los resume y enlaza. Si algo aquí contradice a `README.md` o a `docs/`, revisar ambos y corregir el que esté desactualizado.
 
@@ -152,8 +152,8 @@ De `docs/DECISIONS.md` y de la sesión:
 
 | Riesgo / dependencia | Detalle |
 |---|---|
-| **Cambios sin commit** | M2b está sin confirmar: código en `apps/api` (`routes/properties.ts`, `lib/property-search*.ts`) y `packages/shared`, cambios menores en `apps/web/lib`, la devDependency `@electric-sql/pglite` (`package.json` y `pnpm-lock.yaml`), 5 documentos y este archivo. Nada está en git. |
-| **Rama sin integrar** | Los rediseños de publicación y perfil viven solo en `integracion/m0a-rediseno`, que no está en el remoto ni en `main`. Si se pierde la copia local, se pierde ese trabajo. |
+| **Cambios sin commit** | Ninguno al momento de esta actualización: M2b está confirmado (`16ebd35`). La devDependency `@electric-sql/pglite` queda incluida y sigue pendiente de tu confirmación expresa. |
+| **Rama sin integrar** | Los rediseños de publicación y perfil y M2b viven en `integracion/m0a-rediseno`, ya publicada en el remoto con un PR abierto, pero aún sin fusionar en `main`. |
 | **Sin límite de peticiones** | Ningún endpoint del api tiene rate limiting, incluido el público `GET /postal-codes/:code`. Pendiente para la Etapa 6. |
 | **`sharp`** | Librería nativa: el despliegue debe instalar sus binarios en la plataforma destino y probarse antes del lanzamiento. |
 | **Catálogo de códigos postales** | Sin él, `GET /postal-codes/:code` da 404 y guardar una propiedad falla con 422. Hoy está cargado en el proyecto `cosave`. En cualquier BD nueva hay que correr `pnpm --filter @cosave/api db:postal-codes <MX.txt>`. |
