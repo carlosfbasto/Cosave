@@ -1,6 +1,6 @@
 # Estado del proyecto COSAVE
 
-**Última actualización:** 5 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 y 5 de noviembre) · **Rama de trabajo:** `feature/admin-rediseno`, creada desde `main` (`24a72c0`, que fusiona el PR #8). Tiene el rediseño del panel admin y sus mejoras **sin commit** (ver sección 9). El PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b) ya está en `main`.
+**Última actualización:** 5 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 y 5 de noviembre) · **Rama de trabajo:** `docs/estado-post-admin-rediseno`. `main` y `origin/main` están en `2712b51`, que fusiona el PR #9 (`feature/admin-rediseno`: rediseño del panel admin, panel de revisión de propiedades y avisos `in_app` al dueño). El PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b) y el PR #8 también están en `main`.
 
 Este archivo es el **estado vivo** del proyecto. No repite el roadmap ni la documentación técnica: los resume y enlaza. Si algo aquí contradice a `README.md` o a `docs/`, revisar ambos y corregir el que esté desactualizado.
 
@@ -65,7 +65,7 @@ Rutas existentes: `home`, `properties` (listado, venta, renta, mapa), `propertie
 
 ### Rediseño visual
 
-Sistema "Architectural Precision Minimalist" (`docs/DESIGN.md`): portada, ficha, listado con mapa, Quiénes somos, publicación (`/vender`) y perfil rediseñados. El panel admin se migró al mismo sistema en la rama `feature/admin-rediseno` (menú lateral blanco, `ink`/`azure`, `btn`/`field`) y la paleta anterior (`navy`/`accent`) se retiró de `globals.css`. Además: panel lateral de revisión de propiedades (`components/admin/property-review-panel.tsx`, abre con `?ver=<clave>`) y confirmación al cambiar el rol de un usuario. Detalle en `docs/DESIGN.md`.
+Sistema "Architectural Precision Minimalist" (`docs/DESIGN.md`): portada, ficha, listado con mapa, Quiénes somos, publicación (`/vender`) y perfil rediseñados. El panel admin se migró al mismo sistema (PR #9, fusionado en `main`; menú lateral blanco, `ink`/`azure`, `btn`/`field`) y la paleta anterior (`navy`/`accent`) se retiró de `globals.css`. Además: panel lateral de revisión de propiedades (`components/admin/property-review-panel.tsx`, abre con `?ver=<clave>`) y confirmación al cambiar el rol de un usuario. Detalle en `docs/DESIGN.md`.
 
 ## 4. Estado de cada etapa del roadmap
 
@@ -120,7 +120,7 @@ Nota: el comando `list_migrations` de Supabase devuelve vacío porque Prisma gua
 
 No se probaron los endpoints nuevos contra Supabase ni desde el web.
 
-**Ejecutadas el 5-nov-2026 sobre el rediseño del panel admin y los avisos de revisión (rama `feature/admin-rediseno`), con `--force`:**
+**Ejecutadas el 5-nov-2026 sobre el rediseño del panel admin y los avisos de revisión (rama `feature/admin-rediseno`, antes de fusionar el PR #9), con `--force`:**
 
 | Prueba | Resultado |
 |---|---|
@@ -160,14 +160,14 @@ De `docs/DECISIONS.md` y de la sesión:
 - **Comparador (Etapa 4):** ¿solo en el cliente (localStorage) o guardado en la cuenta? Afecta si hay cambio de BD.
 - **Paginación y filtros en el servidor (Etapa 3):** el api ya los ofrece en `/properties/search*` sin cambiar `GET /properties` ni `/catalog`. Falta decidir cuándo migrar el web y confirmar la devDependency `@electric-sql/pglite`.
 - **Licencia del proyecto:** el `README.md` aún tiene `[elegir: MIT, Apache 2.0, etc.]`.
-- **Qué hacer con la rama `integracion/m0a-rediseno`:** abrir PR a `main`, o seguir acumulando trabajo en ella.
+- **Qué hacer con las ramas ya fusionadas** `integracion/m0a-rediseno` y `feature/admin-rediseno`: borrarlas (remota y local) o conservarlas.
 
 ## 9. Riesgos y dependencias
 
 | Riesgo / dependencia | Detalle |
 |---|---|
-| **Cambios sin commit** | **Sí.** La rama `feature/admin-rediseno` tiene el rediseño del panel, el panel de revisión y los avisos `in_app` sin confirmar (14 archivos modificados y 3 nuevos: `property-review-panel.tsx`, `review-notifications.ts` y su prueba). Hasta hacer commit dependen del árbol de trabajo. La devDependency `@electric-sql/pglite` sigue pendiente de tu confirmación expresa. |
-| **Rama sin integrar** | Ninguna: el PR #7 se fusionó en `main` el 5-nov-2026 (UTC) sin revisión ni verificaciones automáticas; solo se corrieron a mano `typecheck`, `lint`, `build` y las pruebas del api. |
+| **Cambios sin commit** | Ninguno al momento de esta actualización: el rediseño del panel, el panel de revisión y los avisos `in_app` están confirmados y fusionados (PR #9, `2712b51`). La devDependency `@electric-sql/pglite` sigue pendiente de tu confirmación expresa. |
+| **Rama sin integrar** | Ninguna: los PR #7 y #9 ya están en `main` (ambos fusionados el 5-nov-2026, UTC). No hay verificaciones automáticas configuradas (el PR #9 mostró 0 checks); solo se corrieron a mano `typecheck`, `lint`, `build` y las pruebas del api. |
 | **Sin límite de peticiones** | Ningún endpoint del api tiene rate limiting, incluido el público `GET /postal-codes/:code`. Pendiente para la Etapa 6. |
 | **`sharp`** | Librería nativa: el despliegue debe instalar sus binarios en la plataforma destino y probarse antes del lanzamiento. |
 | **Catálogo de códigos postales** | Sin él, `GET /postal-codes/:code` da 404 y guardar una propiedad falla con 422. Hoy está cargado en el proyecto `cosave`. En cualquier BD nueva hay que correr `pnpm --filter @cosave/api db:postal-codes <MX.txt>`. |
@@ -180,7 +180,7 @@ De `docs/DECISIONS.md` y de la sesión:
 
 En orden sugerido. Cada una requiere autorización explícita antes de empezar.
 
-0. **Cerrar el rediseño del panel admin:** probar en móvil y aprobar o retirar una propiedad, hacer commit (sugerido en tres partes: rediseño A1–A5 y B1, panel de revisión B2, avisos B3 y documentación) y decidir el PR hacia `main`.
+0. **Comprobar el panel admin ya fusionado (PR #9):** probar la vista móvil y aprobar o retirar una propiedad, que siguen sin comprobarse. La cuenta del administrador conserva `COS-001003` rechazada con un aviso de prueba.
 1. **Recorrido manual autenticado** de `/vender`, perfil, favoritos y mapa (subida de fotos, Ctrl+rueda en el mapa, vista previa). Es la excepción abierta de M0. 🧪
 2. **Confirmar los cambios de documentación y `PROJECT_STATUS.md`** con un commit en la rama, y decidir el PR hacia `main`.
 3. **M2b (api implementado y auditado):** probar `/properties/search*` contra Supabase y migrar el web para consumirlos. Confirmar antes la devDependency `@electric-sql/pglite`.
