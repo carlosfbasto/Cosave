@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { PROPERTY_STATUSES, type PropertyStatus } from "@cosave/shared";
 import { PageHeader } from "@/components/admin/admin-shell";
+import { PropertyReviewPanel, type ReviewRow } from "@/components/admin/property-review-panel";
 import { ErrorNote, Loading, panel, td, th } from "@/components/admin/ui";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { StatusBadge } from "@/components/status-badge";
@@ -15,7 +16,7 @@ import { formatDate } from "@/lib/mock-users";
 import type { MyProperty } from "@/lib/my-properties";
 import { showToast } from "@/lib/toast";
 
-type Row = MyProperty & { owner: { fullName: string; email: string } };
+type Row = ReviewRow;
 type Dialog = { kind: "reject" | "archive"; row: Row } | null;
 
 const PAGE = 15;
@@ -68,6 +69,7 @@ function PropertiesTable() {
     const next = new URLSearchParams(params.toString());
     if (s) next.set("status", s);
     else next.delete("status");
+    next.delete("ver");
     router.replace(`/admin/propiedades${next.size ? `?${next}` : ""}`);
   }
 
@@ -87,7 +89,17 @@ function PropertiesTable() {
     }
   }
 
+  // El panel de detalle vive en la URL (?ver=clave) para poder compartir el enlace; solo abre si la fila está en la lista cargada.
+  function showPanel(code: string | null) {
+    const next = new URLSearchParams(params.toString());
+    if (code) next.set("ver", code);
+    else next.delete("ver");
+    router.replace(`/admin/propiedades${next.size ? `?${next}` : ""}`);
+  }
+
   const current = data && data.key === key ? data : null;
+  const verCode = params.get("ver");
+  const selected = (verCode && current?.rows.find((r) => r.code === verCode)) || null;
   const pages = current ? Math.max(1, Math.ceil(current.total / PAGE)) : 1;
   const chips: [PropertyStatus | null, string][] = [[null, "Todas"], ["pending", "Pendientes"], ["published", "Publicadas"], ["paused", "Pausadas"], ["rejected", "Rechazadas"], ["sold", "Vendidas"], ["rented", "Rentadas"], ["archived", "Retiradas"], ["draft", "Borradores"]];
 
@@ -143,6 +155,7 @@ function PropertiesTable() {
                   <td className={td}><StatusBadge status={r.status} /><p className="mt-1 text-xs text-slate-500">{formatDate((r.submittedAt ?? r.updatedAt).slice(0, 10))}</p></td>
                   <td className={td}>
                     <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => showPanel(r.code)} className={`${act} ${r.status === "pending" ? "btn-primary" : "btn-outline"}`}>{r.status === "pending" ? "Revisar" : "Detalle"}</button>
                       {r.status === "pending" && (
                         <>
                           <button type="button" disabled={busy === r.id} onClick={() => void run(r, "review", { decision: "approve" }, `${r.code} publicada`)} className={`${act} btn-accent`}>Aprobar</button>
@@ -173,6 +186,15 @@ function PropertiesTable() {
           </div>
         </div>
       )}
+
+      <PropertyReviewPanel
+        row={selected}
+        busy={!!busy}
+        onClose={() => verCode && showPanel(null)}
+        onApprove={(r) => void run(r, "review", { decision: "approve" }, `${r.code} publicada`)}
+        onReject={(r) => setDialog({ kind: "reject", row: r })}
+        onArchive={(r) => setDialog({ kind: "archive", row: r })}
+      />
 
       <ConfirmDialog
         open={!!dialog}

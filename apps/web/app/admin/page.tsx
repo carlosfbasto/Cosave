@@ -50,7 +50,7 @@ export default function AdminHome() {
                   <p className="truncate text-sm text-slate-500">{[p.city, p.state].filter(Boolean).join(", ")} · {p.owner.fullName}</p>
                 </div>
                 <StatusBadge status={p.status} />
-                <Link href={`/admin/propiedades?status=pending&q=${encodeURIComponent(p.code)}`} className="text-sm font-semibold text-azure transition-colors hover:text-azure-hover">
+                <Link href={`/admin/propiedades?status=pending&q=${encodeURIComponent(p.code)}&ver=${encodeURIComponent(p.code)}`} className="text-sm font-semibold text-azure transition-colors hover:text-azure-hover">
                   Revisar →
                 </Link>
               </li>
