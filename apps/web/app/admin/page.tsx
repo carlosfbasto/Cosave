@@ -31,26 +31,26 @@ export default function AdminHome() {
       )}
 
       <section className={panel}>
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="font-bold text-navy">Propiedades por revisar</h2>
-          <Link href="/admin/propiedades?status=pending" className="text-sm font-semibold text-navy underline transition-colors hover:text-accent-hover">Ver todas →</Link>
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <h2 className="headline-sm text-ink">Propiedades por revisar</h2>
+          <Link href="/admin/propiedades?status=pending" className="text-sm font-semibold text-azure transition-colors hover:text-azure-hover">Ver todas →</Link>
         </div>
         {pending.error ? (
           <div className="p-5"><ErrorNote message={pending.error} /></div>
         ) : !pending.data ? (
           <div className="p-5"><Loading /></div>
         ) : pending.data.length === 0 ? (
-          <p className="p-5 text-sm text-slate-600">No hay publicaciones pendientes. ¡Todo al día!</p>
+          <p className="p-5 text-sm text-slate-500">No hay publicaciones pendientes. ¡Todo al día!</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-200">
             {pending.data.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-navy">{p.title}</p>
-                  <p className="truncate text-sm text-slate-600">{[p.city, p.state].filter(Boolean).join(", ")} · {p.owner.fullName}</p>
+                  <p className="truncate font-semibold text-ink">{p.title}</p>
+                  <p className="truncate text-sm text-slate-500">{[p.city, p.state].filter(Boolean).join(", ")} · {p.owner.fullName}</p>
                 </div>
                 <StatusBadge status={p.status} />
-                <Link href={`/admin/propiedades?status=pending&q=${encodeURIComponent(p.code)}`} className="text-sm font-semibold text-navy underline transition-colors hover:text-accent-hover">
+                <Link href={`/admin/propiedades?status=pending&q=${encodeURIComponent(p.code)}&ver=${encodeURIComponent(p.code)}`} className="text-sm font-semibold text-azure transition-colors hover:text-azure-hover">
                   Revisar →
                 </Link>
               </li>

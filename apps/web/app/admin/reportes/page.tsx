@@ -22,15 +22,15 @@ function Rows({ title, rows }: { title: string; rows: [string, number][] }) {
   const max = Math.max(1, ...rows.map(([, n]) => n));
   return (
     <section className={`${panel} p-5`}>
-      <h2 className="mb-4 font-bold text-navy">{title}</h2>
+      <h2 className="headline-sm mb-4 text-ink">{title}</h2>
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-600">Sin datos todavía.</p>
+        <p className="text-sm text-slate-500">Sin datos todavía.</p>
       ) : (
         <ul className="space-y-3">
           {rows.map(([label, n]) => (
             <li key={label}>
-              <div className="mb-1 flex justify-between text-sm"><span className="text-slate-700">{label}</span><span className="font-semibold text-navy">{n.toLocaleString("es-MX")}</span></div>
-              <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-navy" style={{ width: `${(n / max) * 100}%` }} /></div>
+              <div className="mb-1 flex justify-between text-sm"><span className="text-slate-700">{label}</span><span className="font-semibold text-ink">{n.toLocaleString("es-MX")}</span></div>
+              <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-azure" style={{ width: `${(n / max) * 100}%` }} /></div>
             </li>
           ))}
         </ul>

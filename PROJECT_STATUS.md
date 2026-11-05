@@ -1,6 +1,6 @@
 # Estado del proyecto COSAVE
 
-**Última actualización:** 4 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 de noviembre) · **Rama de trabajo:** `docs/estado-post-m2b`. `main` y `origin/main` están en `49e20f4`, que fusiona el PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b).
+**Última actualización:** 5 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 y 5 de noviembre) · **Rama de trabajo:** `feature/admin-rediseno`, creada desde `main` (`24a72c0`, que fusiona el PR #8). Tiene el rediseño del panel admin y sus mejoras **sin commit** (ver sección 9). El PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b) ya está en `main`.
 
 Este archivo es el **estado vivo** del proyecto. No repite el roadmap ni la documentación técnica: los resume y enlaza. Si algo aquí contradice a `README.md` o a `docs/`, revisar ambos y corregir el que esté desactualizado.
 
@@ -43,7 +43,7 @@ Estado por módulo. El nivel ✅ aquí significa que el **módulo compila, pasa 
 | Módulo | Qué hace | Estado |
 |---|---|---|
 | `me` | Perfil propio | 📄 |
-| `admin` | Usuarios, roles, bitácora, cola de revisión de propiedades | 📄 (la bitácora y el cambio de rol tienen la tabla `AuditLog` en la BD ✅) |
+| `admin` | Usuarios, roles, bitácora, cola de revisión de propiedades. Al aprobar, rechazar o retirar, avisa al dueño con un aviso `email` (queda `pending`: aún no hay envío de correos) y uno `in_app` (`lib/review-notifications.ts`, 7 pruebas ✅); el `in_app` solo enlaza a la ficha si se aprobó | 📄 (la bitácora y el cambio de rol tienen la tabla `AuditLog` en la BD ✅). El rechazo y su aviso en la campana se comprobaron con datos reales el 5-nov-2026 ✅; aprobar y retirar solo por pruebas unitarias |
 | `myProperties` | Crear, editar, enviar a revisión, cambiar estado y subir fotos de mis propiedades | 📄 🧪 |
 | `properties` | Listado, catálogo (máx. 500) y detalle públicos | ✅ `GET /properties/catalog` responde 200 con 17 propiedades |
 | `postalCodes` | Consulta pública de código postal | ✅ 97000 y 97130 responden con datos; 00000 da 404 y `abc` da 422 |
@@ -60,11 +60,12 @@ Rutas existentes: `home`, `properties` (listado, venta, renta, mapa), `propertie
 
 - ✅ El `build` compila todas estas rutas. Sin sesión, `/home`, `/properties` y `/properties/sale` responden 200, `/properties/map` redirige a `/properties?vista=mapa`. `/vender`, `/profile/x` y `/favorites/x` también responden 200 sin sesión; eso solo confirma que cargan, no que funcionen.
 - 🧪 **Recorrido manual autenticado de `/vender`, perfil, favoritos y mapa: pendiente** (ver sección 10).
-- 📄 No se revisó el contenido de `admin/configuracion` ni de `admin/reportes`; esta revisión no sabe qué tan completas están.
+- ✅ **Panel admin** (revisado en Chrome de escritorio con datos reales el 5-nov-2026): Resumen, Propiedades, Solicitudes, Usuarios, Reportes y Configuración se ven con el sistema de diseño actual. `admin/configuracion` es de solo lectura (valores vigentes del api) y `admin/reportes` son conteos por estado, tipo, rol y tipo de solicitud, sin fechas ni tendencias. Solicitudes está vacía hasta que exista `POST /seller-requests` (Etapa 5).
+- 🧪 **Panel admin, sin comprobar:** la vista móvil (menú en cajón y panel de revisión a ancho completo), aprobar y retirar con datos reales, y confirmar un cambio de rol real.
 
 ### Rediseño visual
 
-Sistema "Architectural Precision Minimalist" (`docs/DESIGN.md`): portada, ficha, listado con mapa, Quiénes somos, publicación (`/vender`) y perfil rediseñados. El panel admin todavía usa la paleta anterior (`navy`/`accent`), según `AGENTS.md`.
+Sistema "Architectural Precision Minimalist" (`docs/DESIGN.md`): portada, ficha, listado con mapa, Quiénes somos, publicación (`/vender`) y perfil rediseñados. El panel admin se migró al mismo sistema en la rama `feature/admin-rediseno` (menú lateral blanco, `ink`/`azure`, `btn`/`field`) y la paleta anterior (`navy`/`accent`) se retiró de `globals.css`. Además: panel lateral de revisión de propiedades (`components/admin/property-review-panel.tsx`, abre con `?ver=<clave>`) y confirmación al cambiar el rol de un usuario. Detalle en `docs/DESIGN.md`.
 
 ## 4. Estado de cada etapa del roadmap
 
@@ -73,7 +74,7 @@ El roadmap oficial está en `README.md`. Aquí se agrega **qué se comprobó**.
 | Etapa | Descripción | Estado real |
 |---|---|---|
 | **Fase 0** | Arquitectura, planos, stack | ✅ Completa (según `README.md`) |
-| **Etapa 1** | BD, usuarios, roles, admin | 🔄 Migraciones aplicadas ✅. Usuarios, roles, panel admin y bitácora: 📄. **Falta:** respaldos y su pantalla en el admin ⏳ |
+| **Etapa 1** | BD, usuarios, roles, admin | 🔄 Migraciones aplicadas ✅. Usuarios, roles, panel admin y bitácora: 📄 (el panel admin se rediseñó y se comprobó visualmente el 5-nov). **Falta:** respaldos y su pantalla en el admin ⏳, **pantalla de la bitácora** (el api ya tiene `GET /admin/audit`, el web no la usa) ⏳, y paginación en usuarios y solicitudes (hoy fijas en 50) ⏳ |
 | **Etapa 2** | Publicar propiedades, fotos, revisión | 🔄 Código, migraciones y catálogo de códigos postales ✅ en BD. Flujo de publicar y subir fotos de punta a punta: 🧪 **sin probar**. **Falta:** videos / recorridos virtuales ⏳, tipos *oficina* y *rancho* ⏳ |
 | **Etapa 3** | Buscador, filtros, resultados, mapa | 🔄 Listado, ficha, portada y mapa leen del api (catálogo ✅). **M2b (api):** existen `GET /properties/search`, `/search/facets` y `/search/map` (paginación, filtros, texto libre, orden, conteos y recuadro del mapa en el servidor), con 202 pruebas automáticas ✅ (las de SQL corren en PGlite, no en PostgreSQL real). **Falta:** verificar los endpoints contra la BD real de Supabase 🧪 y migrar el web para que los consuma (hoy `apps/web/lib/search.ts` solo reutiliza el parser compartido; el catálogo sigue cargando hasta 500) ⏳. El mapa con gestos: 🧪 |
 | **Etapa 4** | Favoritos, comparador, contacto | 🔄 Favoritos y consultas: 📄 🧪 (con sesión). **Falta el comparador** ⏳ |
@@ -119,6 +120,19 @@ Nota: el comando `list_migrations` de Supabase devuelve vacío porque Prisma gua
 
 No se probaron los endpoints nuevos contra Supabase ni desde el web.
 
+**Ejecutadas el 5-nov-2026 sobre el rediseño del panel admin y los avisos de revisión (rama `feature/admin-rediseno`), con `--force`:**
+
+| Prueba | Resultado |
+|---|---|
+| `pnpm typecheck` | ✅ |
+| `pnpm lint` | ✅ |
+| `pnpm build` | ✅ (compila las 6 rutas de `/admin`) |
+| `pnpm --filter @cosave/api test` | ✅ 209 de 209, en 7 archivos (7 nuevas de `review-notifications`) |
+| Recorrido en Chrome de escritorio del panel admin con sesión real | ✅ todas las pantallas; rechazo real de una propiedad y su aviso en la campana |
+| Vista móvil, aprobar, retirar y confirmar un cambio de rol real | ⚠️ no ejecutado (ver sección 3) |
+
+La auditoría de esta jornada la dejó **aprobada con observaciones** (ninguna crítica ni alta); lo abierto está en la sección 10.
+
 **Cobertura pendiente:**
 - Sin pruebas automáticas: `postal-codes`, `property-service`, rutas de propiedades, favoritos, consultas, notificaciones y búsquedas guardadas (solo el *matching* tiene pruebas).
 - Sin pruebas del web (`apps/web/package.json` no define script `test` ni runner como vitest, jest o playwright).
@@ -152,7 +166,7 @@ De `docs/DECISIONS.md` y de la sesión:
 
 | Riesgo / dependencia | Detalle |
 |---|---|
-| **Cambios sin commit** | Ninguno al momento de esta actualización: M2b está confirmado (`16ebd35`). La devDependency `@electric-sql/pglite` queda incluida y sigue pendiente de tu confirmación expresa. |
+| **Cambios sin commit** | **Sí.** La rama `feature/admin-rediseno` tiene el rediseño del panel, el panel de revisión y los avisos `in_app` sin confirmar (14 archivos modificados y 3 nuevos: `property-review-panel.tsx`, `review-notifications.ts` y su prueba). Hasta hacer commit dependen del árbol de trabajo. La devDependency `@electric-sql/pglite` sigue pendiente de tu confirmación expresa. |
 | **Rama sin integrar** | Ninguna: el PR #7 se fusionó en `main` el 5-nov-2026 (UTC) sin revisión ni verificaciones automáticas; solo se corrieron a mano `typecheck`, `lint`, `build` y las pruebas del api. |
 | **Sin límite de peticiones** | Ningún endpoint del api tiene rate limiting, incluido el público `GET /postal-codes/:code`. Pendiente para la Etapa 6. |
 | **`sharp`** | Librería nativa: el despliegue debe instalar sus binarios en la plataforma destino y probarse antes del lanzamiento. |
@@ -166,6 +180,7 @@ De `docs/DECISIONS.md` y de la sesión:
 
 En orden sugerido. Cada una requiere autorización explícita antes de empezar.
 
+0. **Cerrar el rediseño del panel admin:** probar en móvil y aprobar o retirar una propiedad, hacer commit (sugerido en tres partes: rediseño A1–A5 y B1, panel de revisión B2, avisos B3 y documentación) y decidir el PR hacia `main`.
 1. **Recorrido manual autenticado** de `/vender`, perfil, favoritos y mapa (subida de fotos, Ctrl+rueda en el mapa, vista previa). Es la excepción abierta de M0. 🧪
 2. **Confirmar los cambios de documentación y `PROJECT_STATUS.md`** con un commit en la rama, y decidir el PR hacia `main`.
 3. **M2b (api implementado y auditado):** probar `/properties/search*` contra Supabase y migrar el web para consumirlos. Confirmar antes la devDependency `@electric-sql/pglite`.
@@ -173,6 +188,7 @@ En orden sugerido. Cada una requiere autorización explícita antes de empezar.
 5. **Pruebas automáticas** de `property-service` y de las rutas principales, antes de seguir con funciones nuevas.
 6. Etapa 5: flujo de **asesores** y avisos por **email**.
 7. Etapa 6: **rate limiting**, respaldos y revisión de seguridad.
+8. **Mejoras del panel admin** (de la planificación del 5-nov): paginación y filtro por rol en usuarios y solicitudes, pantalla de bitácora, y revisión atómica de publicaciones (evita que dos admins revisen a la vez; toca el api). Menores de la auditoría: el panel no abre con `?ver=` de una propiedad fuera de la página cargada, un motivo de solo puntos queda vacío en el aviso, «Rechazar» y «Retirar» perdieron el rojo al pasar el cursor y los estilos de los chips están duplicados.
 
 ## 11. Discrepancias de documentación detectadas
 

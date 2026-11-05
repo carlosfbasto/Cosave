@@ -259,3 +259,12 @@ Fusión de los diseños de Stitch «Mi perfil de usuario» (tarjetas y métricas
 - **Favoritos**: selector «Cuadrícula / Lista» como el de `/properties` (parámetro `vista=lista` en la URL; la cuadrícula es la predeterminada). Cuadrícula de tarjetas 16:10 o lista con la tarjeta horizontal del listado (`PropertyRowCard`); corazón para quitar y $/m² calculado.
 - **Búsquedas guardadas**: «Ver resultados» abre `/properties/sale|rentals` con los mismos filtros.
 - **Omitido por no tener datos reales**: verificación CURP/INE/RENAPO/NOM-247, índice de confiabilidad, notaría asignada, concierge/asesor AMPI, dossier jurídico, preferencias (WhatsApp, privacidad telefónica, divisa), frecuencia de alertas y coincidencias de la semana, colecciones de favoritos y modo oscuro.
+## Panel de administración (`/admin`) — nota COSAVE
+
+Mismo sistema visual que el resto del sitio; no lleva el header ni el footer públicos (`HideOnAdmin`).
+
+- **Marco** (`components/admin/admin-shell.tsx`): barra lateral blanca de 260px con borde `slate-200` y contenido sobre `slate-50`; en móvil, cajón con `scrim`. Activo: `bg-slate-100`, texto `ink`, ícono `azure`. Cabecera de página con `headline-md`/`headline-lg`.
+- **Piezas compartidas** (`components/admin/ui.tsx`): `panel` (`card-surface rounded-xl`), `StatCard` (cifras con `metric-price`), `th`/`td` (encabezados `label-sm`), `Loading`, `ErrorNote`.
+- **Controles**: botones con `btn btn-accent|btn-outline`, campos con `field`, chips de filtro (activo `ink`, inactivo borde `slate-300`).
+- **Estados**: `status-badge.tsx` es el mismo del sitio. En solicitudes, «Nueva» usa `azure` claro.
+- **Confirmaciones**: el cambio de rol en Usuarios pasa por `ConfirmDialog`; si interviene el rol Administrador, el botón es rojo y avisa del alcance.

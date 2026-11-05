@@ -8,12 +8,12 @@ import { useProfile } from "@/lib/use-profile";
 
 function Row({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="flex flex-wrap justify-between gap-2 border-b border-slate-100 py-3 text-sm last:border-b-0">
+    <div className="flex flex-wrap justify-between gap-2 border-b border-slate-200 py-3 text-sm last:border-b-0">
       <div>
-        <dt className="font-medium text-navy">{label}</dt>
+        <dt className="font-medium text-ink">{label}</dt>
         {hint && <p className="text-xs text-slate-500">{hint}</p>}
       </div>
-      <dd className="font-semibold text-navy">{value}</dd>
+      <dd className="font-semibold text-ink">{value}</dd>
     </div>
   );
 }
@@ -28,7 +28,7 @@ export default function AdminSettingsPage() {
       {error ? <ErrorNote message={error} /> : !c ? <Loading /> : (
         <div className="grid gap-4 lg:grid-cols-2">
           <section className={`${panel} p-5`}>
-            <h2 className="mb-1 font-bold text-navy">Publicaciones</h2>
+            <h2 className="headline-sm mb-1 text-ink">Publicaciones</h2>
             <dl>
               <Row label="Aprobación previa" value={c.requiresApproval ? "Activada" : "Desactivada"} hint="Variable PUBLISH_REQUIRES_APPROVAL del api" />
               <Row label="Fotos por propiedad" value={`Hasta ${c.imageLimits.maxCount}`} />
@@ -37,7 +37,7 @@ export default function AdminSettingsPage() {
             </dl>
           </section>
           <section className={`${panel} p-5`}>
-            <h2 className="mb-1 font-bold text-navy">Sistema</h2>
+            <h2 className="headline-sm mb-1 text-ink">Sistema</h2>
             <dl>
               <Row label="Almacenamiento de fotos" value={c.storageConfigured ? "Conectado" : "Sin configurar"} hint={c.storageConfigured ? undefined : "Falta SUPABASE_SERVICE_ROLE_KEY en el api"} />
               <Row label="Tu cuenta" value={profile?.email ?? "—"} />

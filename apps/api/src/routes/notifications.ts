@@ -4,7 +4,7 @@ import { handler, HttpError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth } from "../middleware/auth.js";
 
-/** Avisos dentro de la app (campana del header): coincidencias de búsquedas guardadas. */
+/** Avisos dentro de la app (campana del header): coincidencias de búsquedas guardadas y resultado de la revisión de mis publicaciones. */
 export const notificationsRouter = Router();
 notificationsRouter.use(requireAuth);
 
