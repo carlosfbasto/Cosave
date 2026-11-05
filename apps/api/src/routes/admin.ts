@@ -7,6 +7,7 @@ import { handler, HttpError } from "../lib/errors.js";
 import { moveStatus } from "../lib/property-service.js";
 import { ownerView, propertyInclude } from "../lib/property-view.js";
 import { prisma } from "../lib/prisma.js";
+import { reviewNotices } from "../lib/review-notifications.js";
 import { notifySavedSearchMatches } from "../lib/search-matching.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
@@ -141,17 +142,8 @@ adminRouter.post(
         after: { status: to, decision, ...(note && { note }) },
       },
     });
-    await prisma.notification.create({
-      data: {
-        userId: p.ownerId,
-        channel: "email",
-        subject: decision === "approve" ? "Tu propiedad ya está publicada" : "Tu publicación necesita cambios",
-        body:
-          decision === "approve"
-            ? `«${p.title}» (${p.publicCode}) fue aprobada y ya es visible en COSAVE.`
-            : `«${p.title}» (${p.publicCode}) no fue aprobada. Motivo: ${note}. Puedes corregirla y enviarla de nuevo.`,
-        matchPropertyId: p.id,
-      },
+    await prisma.notification.createMany({
+      data: reviewNotices(decision === "approve" ? "approved" : "rejected", { ownerId: p.ownerId, propertyId: p.id, title: p.title, code: p.publicCode }, note ?? null),
     });
     const fresh = await prisma.property.findUniqueOrThrow({ where: { id }, include: propertyInclude });
     // Avisar a quien guardó una búsqueda que coincide. Si falla, la aprobación ya quedó hecha.
@@ -182,14 +174,8 @@ adminRouter.post(
         after: { status: "archived", note },
       },
     });
-    await prisma.notification.create({
-      data: {
-        userId: p.ownerId,
-        channel: "email",
-        subject: "Tu publicación fue retirada",
-        body: `«${p.title}» (${p.publicCode}) fue retirada por el equipo de COSAVE. Motivo: ${note}.`,
-        matchPropertyId: p.id,
-      },
+    await prisma.notification.createMany({
+      data: reviewNotices("archived", { ownerId: p.ownerId, propertyId: p.id, title: p.title, code: p.publicCode }, note),
     });
     const fresh = await prisma.property.findUniqueOrThrow({ where: { id }, include: propertyInclude });
     res.json({ data: ownerView(fresh) });
