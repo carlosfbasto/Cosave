@@ -12,9 +12,9 @@ interface Row { id: string; kind: "self_publish" | "find_agent" | "services"; st
 
 const KIND: Record<Row["kind"], string> = { self_publish: "Publicar por su cuenta", find_agent: "Buscar un asesor", services: "Servicios (foto, video…)" };
 const STATUS: Record<Status, { label: string; style: string }> = {
-  open: { label: "Nueva", style: "bg-accent/30 text-navy" },
-  assigned: { label: "Asignada", style: "bg-sky-100 text-sky-800" },
-  closed: { label: "Cerrada", style: "bg-slate-200 text-slate-600" },
+  open: { label: "Nueva", style: "bg-sky-50 text-azure" },
+  assigned: { label: "Asignada", style: "bg-slate-100 text-ink" },
+  closed: { label: "Cerrada", style: "bg-slate-200 text-slate-500" },
 };
 const FILTERS: [Status | null, string][] = [[null, "Todas"], ["open", "Nuevas"], ["assigned", "Asignadas"], ["closed", "Cerradas"]];
 
@@ -50,7 +50,7 @@ export default function AdminRequestsPage() {
       <PageHeader title="Solicitudes" subtitle="Vendedores que piden publicar, un asesor o servicios." />
       <div role="group" aria-label="Filtrar por estado" className="flex flex-wrap gap-2">
         {FILTERS.map(([s, label]) => (
-          <button key={label} type="button" aria-pressed={filter === s} onClick={() => setFilter(s)} className={`cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${filter === s ? "bg-navy text-white" : "border border-slate-300 bg-white text-slate-700 hover:border-navy"}`}>
+          <button key={label} type="button" aria-pressed={filter === s} onClick={() => setFilter(s)} className={`cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${filter === s ? "bg-ink text-white" : "border border-slate-300 bg-white text-slate-700 hover:border-slate-400"}`}>
             {label}
           </button>
         ))}
@@ -60,18 +60,18 @@ export default function AdminRequestsPage() {
       ) : !current ? (
         <Loading />
       ) : current.rows.length === 0 ? (
-        <p className={`${panel} p-6 text-center text-sm text-slate-600`}>Aún no hay solicitudes. Aparecerán aquí cuando los vendedores las envíen.</p>
+        <p className={`${panel} p-6 text-center text-sm text-slate-500`}>Aún no hay solicitudes. Aparecerán aquí cuando los vendedores las envíen.</p>
       ) : (
         <div className={`${panel} overflow-x-auto`}>
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200"><tr><th className={th}>Vendedor</th><th className={th}>Tipo</th><th className={th}>Notas</th><th className={th}>Fecha</th><th className={th}>Estado</th></tr></thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {current.rows.map((r) => (
                 <tr key={r.id}>
-                  <td className={td}><p className="font-medium text-navy">{r.seller.fullName}</p><p className="text-xs text-slate-500">{r.seller.email}</p></td>
+                  <td className={td}><p className="font-medium text-ink">{r.seller.fullName}</p><p className="text-xs text-slate-500">{r.seller.email}</p></td>
                   <td className={td}>{KIND[r.kind]}</td>
-                  <td className={`${td} max-w-xs text-slate-600`}>{r.notes ?? "—"}</td>
-                  <td className={`${td} whitespace-nowrap text-slate-600`}>{formatDate(r.createdAt.slice(0, 10))}</td>
+                  <td className={`${td} max-w-xs text-slate-500`}>{r.notes ?? "—"}</td>
+                  <td className={`${td} whitespace-nowrap text-slate-500`}>{formatDate(r.createdAt.slice(0, 10))}</td>
                   <td className={td}>
                     <select value={r.status} onChange={(e) => void change(r.id, e.target.value as Status)} aria-label={`Estado de la solicitud de ${r.seller.fullName}`} className={`cursor-pointer rounded-full border-0 px-3 py-1 text-xs font-semibold ${STATUS[r.status].style}`}>
                       {(Object.keys(STATUS) as Status[]).map((s) => <option key={s} value={s}>{STATUS[s].label}</option>)}

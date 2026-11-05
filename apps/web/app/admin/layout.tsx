@@ -8,7 +8,7 @@ import { useProfile } from "@/lib/use-profile";
 
 function Gate({ children }: { children: ReactNode }) {
   const { profile, role, loading } = useProfile();
-  if (loading) return <p className="p-8 text-sm text-slate-600">Cargando…</p>;
+  if (loading) return <p className="p-8 text-sm text-slate-500">Cargando…</p>;
   if (!profile || role !== "admin") {
     return <NoticeCard title="Sin acceso" text="Esta sección es solo para administradores de COSAVE." href="/home" cta="Ir al inicio" />;
   }

@@ -19,8 +19,8 @@ type Row = MyProperty & { owner: { fullName: string; email: string } };
 type Dialog = { kind: "reject" | "archive"; row: Row } | null;
 
 const PAGE = 15;
-const field = "w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-navy focus:border-navy focus:outline-none focus:ring-2 focus:ring-accent/60";
-const act = "cursor-pointer rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-50";
+const field = "field px-3 py-2 text-sm";
+const act = "btn px-3 py-1.5 text-xs";
 
 function PropertiesTable() {
   const router = useRouter();
@@ -95,7 +95,7 @@ function PropertiesTable() {
     <>
       <PageHeader title="Propiedades" subtitle="Revisa publicaciones nuevas y administra las existentes." />
       <div className="flex flex-wrap items-center gap-3">
-        <input type="search" value={text} onChange={(e) => setText(e.target.value)} placeholder="Buscar por título, clave, ciudad o dueño…" aria-label="Buscar propiedades" className={`${field} max-w-sm bg-white`} />
+        <input type="search" value={text} onChange={(e) => setText(e.target.value)} placeholder="Buscar por título, clave, ciudad o dueño…" aria-label="Buscar propiedades" className={`${field} max-w-sm`} />
         <div role="group" aria-label="Filtrar por estado" className="flex flex-wrap gap-2">
           {chips.map(([s, label]) => (
             <button
@@ -103,7 +103,7 @@ function PropertiesTable() {
               type="button"
               aria-pressed={status === s}
               onClick={() => setStatus(s)}
-              className={`cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${status === s ? "bg-navy text-white" : "border border-slate-300 bg-white text-slate-700 hover:border-navy"}`}
+              className={`cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${status === s ? "bg-ink text-white" : "border border-slate-300 bg-white text-slate-700 hover:border-slate-400"}`}
             >
               {label}
             </button>
@@ -116,14 +116,14 @@ function PropertiesTable() {
       ) : !current ? (
         <Loading />
       ) : current.rows.length === 0 ? (
-        <p className={`${panel} p-6 text-center text-sm text-slate-600`}>No hay propiedades con estos criterios.</p>
+        <p className={`${panel} p-6 text-center text-sm text-slate-500`}>No hay propiedades con estos criterios.</p>
       ) : (
         <div className={`${panel} overflow-x-auto`}>
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200">
               <tr><th className={th}>Propiedad</th><th className={th}>Dueño</th><th className={th}>Precio</th><th className={th}>Estado</th><th className={th}>Acciones</th></tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {current.rows.map((r) => (
                 <tr key={r.id}>
                   <td className={td}>
@@ -132,27 +132,27 @@ function PropertiesTable() {
                         {r.images[0] && <Image src={r.images[0].url} alt="" fill sizes="64px" className="object-cover" />}
                       </div>
                       <div className="min-w-0">
-                        <p className="max-w-[16rem] truncate font-semibold text-navy">{r.title || "Sin título"}</p>
+                        <p className="max-w-[16rem] truncate font-semibold text-ink">{r.title || "Sin título"}</p>
                         <p className="text-xs text-slate-500">{r.code} · {[r.city, r.state].filter(Boolean).join(", ")} · {r.operation === "rent" ? "Renta" : "Venta"}</p>
                         {r.reviewNote && <p className="max-w-[16rem] truncate text-xs text-amber-700" title={r.reviewNote}>Nota: {r.reviewNote}</p>}
                       </div>
                     </div>
                   </td>
-                  <td className={td}><p className="text-navy">{r.owner.fullName}</p><p className="text-xs text-slate-500">{r.owner.email}</p></td>
+                  <td className={td}><p className="text-ink">{r.owner.fullName}</p><p className="text-xs text-slate-500">{r.owner.email}</p></td>
                   <td className={`${td} whitespace-nowrap`}>{formatMxn(r.price)}</td>
                   <td className={td}><StatusBadge status={r.status} /><p className="mt-1 text-xs text-slate-500">{formatDate((r.submittedAt ?? r.updatedAt).slice(0, 10))}</p></td>
                   <td className={td}>
                     <div className="flex flex-wrap gap-2">
                       {r.status === "pending" && (
                         <>
-                          <button type="button" disabled={busy === r.id} onClick={() => void run(r, "review", { decision: "approve" }, `${r.code} publicada`)} className={`${act} border-transparent bg-accent text-navy hover:bg-accent-hover`}>Aprobar</button>
-                          <button type="button" disabled={busy === r.id} onClick={() => setDialog({ kind: "reject", row: r })} className={`${act} border-slate-300 text-slate-700 hover:border-red-500 hover:text-red-600`}>Rechazar</button>
+                          <button type="button" disabled={busy === r.id} onClick={() => void run(r, "review", { decision: "approve" }, `${r.code} publicada`)} className={`${act} btn-accent`}>Aprobar</button>
+                          <button type="button" disabled={busy === r.id} onClick={() => setDialog({ kind: "reject", row: r })} className={`${act} btn-outline`}>Rechazar</button>
                         </>
                       )}
                       {(r.status === "published" || r.status === "paused") && (
                         <>
-                          {r.status === "published" && <Link href={`/properties/${r.code}`} className={`${act} border-slate-300 text-slate-700 hover:border-navy hover:text-navy`}>Ver</Link>}
-                          <button type="button" disabled={busy === r.id} onClick={() => setDialog({ kind: "archive", row: r })} className={`${act} border-slate-300 text-slate-700 hover:border-red-500 hover:text-red-600`}>Retirar</button>
+                          {r.status === "published" && <Link href={`/properties/${r.code}`} className={`${act} btn-outline`}>Ver</Link>}
+                          <button type="button" disabled={busy === r.id} onClick={() => setDialog({ kind: "archive", row: r })} className={`${act} btn-outline`}>Retirar</button>
                         </>
                       )}
                     </div>
@@ -165,11 +165,11 @@ function PropertiesTable() {
       )}
 
       {current && current.total > PAGE && (
-        <div className="flex items-center justify-between text-sm text-slate-600">
+        <div className="flex items-center justify-between text-sm text-slate-500">
           <span>{current.total} propiedades · página {page} de {pages}</span>
           <div className="flex gap-2">
-            <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1.5 font-semibold text-navy disabled:opacity-50">Anterior</button>
-            <button type="button" disabled={page >= pages} onClick={() => setPage(page + 1)} className="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1.5 font-semibold text-navy disabled:opacity-50">Siguiente</button>
+            <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="btn btn-outline px-3 py-1.5">Anterior</button>
+            <button type="button" disabled={page >= pages} onClick={() => setPage(page + 1)} className="btn btn-outline px-3 py-1.5">Siguiente</button>
           </div>
         </div>
       )}

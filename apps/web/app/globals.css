@@ -24,12 +24,6 @@
   --color-azure: #0284c7;
   --color-azure-hover: #0369a1;
 
-  /* Paleta anterior: solo la usa el panel admin hasta migrarlo. */
-  --color-navy: #0b1f3a;
-  --color-navy-light: #16335c;
-  --color-accent: #f5b83d;
-  --color-accent-hover: #ffd16e;
-
   /* Elevación */
   --shadow-glow: 0 4px 20px -2px rgb(15 23 42 / 0.05);
   --shadow-veil: 0 20px 40px -15px rgb(15 23 42 / 0.12);
