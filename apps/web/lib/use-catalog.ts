@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { fetchCatalog, fetchProperty } from "./catalog";
 import type { ListedProperty } from "./mock-data";
 
@@ -8,11 +8,24 @@ import type { ListedProperty } from "./mock-data";
 let cache: { items: ListedProperty[]; at: number } | null = null;
 let inflight: Promise<ListedProperty[]> | null = null;
 
+type CatalogState = { items: ListedProperty[]; ready: boolean };
+/** Lo que el servidor siempre pinta (sin catálogo). También es lo que React usa mientras hidrata. */
+const NOT_READY: CatalogState = { items: [], ready: false };
+let snapshot: CatalogState = NOT_READY;
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+}
+
 export function loadCatalog(): Promise<ListedProperty[]> {
   if (cache && Date.now() - cache.at < 60_000) return Promise.resolve(cache.items);
   inflight ??= fetchCatalog()
     .then(({ items }) => {
       cache = { items, at: Date.now() };
+      snapshot = { items, ready: true };
+      listeners.forEach((l) => l());
       return items;
     })
     .finally(() => {
@@ -21,14 +34,16 @@ export function loadCatalog(): Promise<ListedProperty[]> {
   return inflight;
 }
 
-export function useCatalog(): { items: ListedProperty[]; ready: boolean } {
-  const [state, setState] = useState<{ items: ListedProperty[]; ready: boolean }>(() => ({ items: cache?.items ?? [], ready: !!cache }));
+/**
+ * Catálogo compartido. Se lee con `useSyncExternalStore` y un snapshot de servidor «no listo»: durante la
+ * hidratación el cliente parte del mismo HTML que mandó el servidor aunque el catálogo ya haya llegado
+ * (antes, leer la caché en el render inicial causaba un error de hidratación). En navegaciones dentro de
+ * la app, con la caché tibia, se muestra de inmediato, sin pasar por «Cargando».
+ */
+export function useCatalog(): CatalogState {
+  const state = useSyncExternalStore(subscribe, () => snapshot, () => NOT_READY);
   useEffect(() => {
-    let alive = true;
-    void loadCatalog().then((items) => alive && setState({ items, ready: true }));
-    return () => {
-      alive = false;
-    };
+    void loadCatalog();
   }, []);
   return state;
 }
