@@ -152,7 +152,7 @@ function PropertiesTable() {
                   </td>
                   <td className={td}><p className="text-ink">{r.owner.fullName}</p><p className="text-xs text-slate-500">{r.owner.email}</p></td>
                   <td className={`${td} whitespace-nowrap`}>{formatMxn(r.price)}</td>
-                  <td className={td}><StatusBadge status={r.status} /><p className="mt-1 text-xs text-slate-500">{formatDate((r.submittedAt ?? r.updatedAt).slice(0, 10))}</p></td>
+                  <td className={td}><StatusBadge status={r.status} /><p className="mt-1 text-xs text-slate-500">{formatDate(r.submittedAt ?? r.updatedAt)}</p></td>
                   <td className={td}>
                     <div className="flex flex-wrap gap-2">
                       <button type="button" onClick={() => showPanel(r.code)} className={`${act} ${r.status === "pending" ? "btn-primary" : "btn-outline"}`}>{r.status === "pending" ? "Revisar" : "Detalle"}</button>

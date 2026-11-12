@@ -33,7 +33,9 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
   const [messageError, setMessageError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
-  const [unavailable, setUnavailable] = useState(false);
+  // Motivo por el que el api rechazó la consulta (409): la publicación ya no está disponible o es del propio usuario.
+  const [rejected, setRejected] = useState<"unavailable" | "own_property" | null>(null);
+  const unavailable = rejected === "unavailable";
   const [formError, setFormError] = useState<string | null>(null);
 
   const name = saved.name ?? base?.fullName ?? "";
@@ -63,7 +65,7 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
       });
       setSent(true);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) setUnavailable(true);
+      if (err instanceof ApiError && err.status === 409) setRejected(err.code === "own_property" ? "own_property" : "unavailable");
       else setFormError("No pudimos registrar tu consulta. Inténtalo de nuevo en unos minutos.");
     } finally {
       setSending(false);
@@ -78,17 +80,21 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
     </div>
   );
 
-  if (unavailable || sent) {
+  if (rejected || sent) {
     return (
       <div className="space-y-5 p-6">
         {header}
-        <div role={unavailable ? "alert" : "status"} className="flex flex-col items-center gap-3 py-4 text-center">
-          {!unavailable && <span className="grid h-14 w-14 place-items-center rounded-full bg-azure text-2xl font-bold text-white">✓</span>}
-          <p className="font-bold text-ink">{unavailable ? "Esta publicación ya no está disponible" : "¡Consulta enviada!"}</p>
+        <div role={rejected ? "alert" : "status"} className="flex flex-col items-center gap-3 py-4 text-center">
+          {!rejected && <span className="grid h-14 w-14 place-items-center rounded-full bg-azure text-2xl font-bold text-white">✓</span>}
+          <p className="font-bold text-ink">
+            {rejected === "own_property" ? "Esta publicación es tuya" : unavailable ? "Esta publicación ya no está disponible" : "¡Consulta enviada!"}
+          </p>
           <p className="text-sm text-slate-600">
-            {unavailable
-              ? `No es posible enviar nuevas consultas sobre “${title}”.`
-              : "El anunciante podrá ver tu consulta. Aparecerá como pendiente hasta que responda."}
+            {rejected === "own_property"
+              ? "No puedes enviarte una consulta a ti mismo. Las consultas que recibas aparecerán en tu perfil, en «Mis propiedades»."
+              : unavailable
+                ? `No es posible enviar nuevas consultas sobre “${title}”.`
+                : "El anunciante podrá ver tu consulta. Aparecerá como pendiente hasta que responda."}
           </p>
         </div>
         <button type="button" onClick={onClose} className="w-full cursor-pointer rounded-lg bg-ink px-4 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">

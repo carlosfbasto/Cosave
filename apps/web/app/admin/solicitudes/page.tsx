@@ -71,7 +71,7 @@ export default function AdminRequestsPage() {
                   <td className={td}><p className="font-medium text-ink">{r.seller.fullName}</p><p className="text-xs text-slate-500">{r.seller.email}</p></td>
                   <td className={td}>{KIND[r.kind]}</td>
                   <td className={`${td} max-w-xs text-slate-500`}>{r.notes ?? "—"}</td>
-                  <td className={`${td} whitespace-nowrap text-slate-500`}>{formatDate(r.createdAt.slice(0, 10))}</td>
+                  <td className={`${td} whitespace-nowrap text-slate-500`}>{formatDate(r.createdAt)}</td>
                   <td className={td}>
                     <select value={r.status} onChange={(e) => void change(r.id, e.target.value as Status)} aria-label={`Estado de la solicitud de ${r.seller.fullName}`} className={`cursor-pointer rounded-full border-0 px-3 py-1 text-xs font-semibold ${STATUS[r.status].style}`}>
                       {(Object.keys(STATUS) as Status[]).map((s) => <option key={s} value={s}>{STATUS[s].label}</option>)}

@@ -57,7 +57,7 @@ export function Advertiser({
           )}
           <div className="flex justify-between gap-3">
             <dt className="text-slate-500">Miembro desde</dt>
-            <dd className="text-right font-medium text-ink">{formatDate(user ? user.joinedAt : memberSince!.slice(0, 10))}</dd>
+            <dd className="text-right font-medium text-ink">{formatDate(user ? user.joinedAt : memberSince!)}</dd>
           </div>
           {user && (
             <div className="flex justify-between gap-3">
