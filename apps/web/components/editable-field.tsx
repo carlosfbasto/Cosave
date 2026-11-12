@@ -6,10 +6,14 @@ import { regions } from "@/components/property-detail/contact-utils";
 const inputBase =
   "w-full rounded-lg border bg-white py-2 pl-3 pr-10 text-sm transition-colors placeholder:text-slate-400 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/15";
 
+/** Aplica la edición pendiente: `undefined` si no había, `null` si el dato no es válido (el campo muestra su error). */
+export type CommitResult = { value: string; region: string } | null | undefined;
+
 /**
  * Campo con un dato precargado: gris mientras está guardado, negro mientras se edita.
- * Los cambios solo se aplican con la palomita verde (o Enter); el lápiz vuelve a abrir la edición.
- * Lo usan los modales "Me interesa" y "Guardar mi búsqueda".
+ * Los cambios se aplican con la palomita verde (o Enter), o solos al enviar el formulario si el padre
+ * llama a la función registrada con `register`; el lápiz vuelve a abrir la edición.
+ * Lo usa el modal "Me interesa". Para formularios sin datos precargados, ver `ValidatedField`.
  */
 export function EditableField({
   id,
@@ -27,6 +31,7 @@ export function EditableField({
   validate,
   onSave,
   onEditing,
+  register,
 }: {
   id: string;
   label: string;
@@ -45,7 +50,9 @@ export function EditableField({
   format?: (v: string) => string;
   validate: (v: string) => string | null;
   onSave: (value: string, region: string) => void;
-  onEditing: (id: string, editing: boolean) => void;
+  onEditing?: (id: string, editing: boolean) => void;
+  /** Entrega al padre la función que aplica la edición pendiente (y la retira al desmontarse). */
+  register?: (id: string, commit: (() => CommitResult) | null) => void;
 }) {
   const [editing, setEditing] = useState(!value); // sin dato: nace editable
   const [draft, setDraft] = useState(value);
@@ -54,7 +61,7 @@ export function EditableField({
   const inputRef = useRef<HTMLInputElement & HTMLSelectElement>(null);
 
   const pending = editing && !(optional && !value && !draft.trim());
-  useEffect(() => onEditing(id, pending), [id, pending, onEditing]);
+  useEffect(() => onEditing?.(id, pending), [id, pending, onEditing]);
 
   function open() {
     setDraft(value);
@@ -63,13 +70,21 @@ export function EditableField({
     setTimeout(() => inputRef.current?.focus(), 0);
   }
 
-  function confirm() {
+  function confirm(): CommitResult {
     const msg = validate(draft);
     setError(msg);
-    if (msg) return;
-    onSave(draft.trim(), draftRegion);
+    if (msg) return null;
+    const saved = { value: draft.trim(), region: draftRegion };
+    onSave(saved.value, saved.region);
     setEditing(false);
+    return saved;
   }
+
+  // Se vuelve a registrar en cada render para que el padre siempre aplique el borrador más reciente.
+  useEffect(() => {
+    register?.(id, () => (editing ? confirm() : undefined));
+    return () => register?.(id, null);
+  });
 
   const cls = `${inputBase} ${error ? "border-red-500" : "border-slate-300"} ${editing ? "text-slate-900" : "text-slate-500"}`;
   const common = {
