@@ -56,7 +56,8 @@ export function toListed(a: ApiProperty): ListedProperty {
     landArea: a.landAreaM2 ?? 0,
     image: a.images[0] ?? PLACEHOLDER_IMAGE,
     images: a.images,
-    publishedAt: a.publishedAt.slice(0, 10),
+    // Día en hora de México (YYYY-MM-DD); cortar el ISO daría el día UTC, que de noche va un día adelantado.
+    publishedAt: new Date(a.publishedAt).toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }),
     map: { x: 50, y: 50 },
     latitude: a.latitude,
     longitude: a.longitude,

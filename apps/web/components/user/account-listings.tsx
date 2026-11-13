@@ -88,7 +88,7 @@ function Card({ p, onUpdate }: { p: MyProperty; onUpdate: (next: MyProperty) => 
             {p.price > 0 && <span className="text-xs font-semibold text-slate-500">MXN{isRent && " /mes"}</span>}
           </p>
           <p className="text-xs text-slate-500">
-            {p.code} · actualizada el {formatDate(p.updatedAt.slice(0, 10))}
+            {p.code} · actualizada el {formatDate(p.updatedAt)}
           </p>
           {p.status === "rejected" && p.reviewNote && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">Motivo del rechazo: {p.reviewNote}</p>}
           {p.status === "pending" && <p className="rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-800">En revisión: no se puede editar hasta que sea aprobada o regreses a borrador.</p>}

@@ -73,5 +73,16 @@ export const getMockUser = (id: string) => mockUsers.find((u) => u.id === id);
 export const advertiserOf = (code: string) =>
   mockUsers.find((u) => (u.role === "seller" || u.role === "agent") && u.propertyCodes.includes(code));
 
+const DATE_OPTIONS = { day: "numeric", month: "long", year: "numeric" } as const;
+
+/**
+ * Fecha larga en español.
+ * - `YYYY-MM-DD` (fecha de calendario, p. ej. los datos de demostración): se muestra tal cual.
+ * - Marca de tiempo ISO (la que guarda el api, en UTC): se convierte a la hora de México para que
+ *   la fecha no se adelante un día por la noche. Zona fija (no la del navegador) para que servidor
+ *   y cliente muestren lo mismo.
+ */
 export const formatDate = (iso: string) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" });
+  /^\d{4}-\d{2}-\d{2}$/.test(iso)
+    ? new Date(`${iso}T12:00:00`).toLocaleDateString("es-MX", DATE_OPTIONS)
+    : new Date(iso).toLocaleDateString("es-MX", { ...DATE_OPTIONS, timeZone: "America/Mexico_City" });

@@ -74,7 +74,7 @@ export default function AdminUsersPage() {
                   <tr key={u.id}>
                     <td className={`${td} font-medium text-ink`}>{u.fullName}</td>
                     <td className={`${td} text-slate-500`}>{u.email}</td>
-                    <td className={`${td} text-slate-500`}>{u.createdAt ? formatDate(u.createdAt.slice(0, 10)) : "—"}</td>
+                    <td className={`${td} text-slate-500`}>{u.createdAt ? formatDate(u.createdAt) : "—"}</td>
                     <td className={td}>
                       <select
                         value={u.role}

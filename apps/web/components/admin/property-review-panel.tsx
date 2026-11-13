@@ -12,7 +12,7 @@ import type { MyProperty } from "@/lib/my-properties";
 /** Propiedad tal como la lista el panel: la vista completa del api más los datos del dueño. */
 export type ReviewRow = MyProperty & { owner: { fullName: string; email: string } };
 
-const day = (iso: string | null) => (iso ? formatDate(iso.slice(0, 10)) : "—");
+const day = (iso: string | null) => (iso ? formatDate(iso) : "—");
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

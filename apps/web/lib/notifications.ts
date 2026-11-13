@@ -15,7 +15,7 @@ export interface AppNotification {
   kind: "match" | "system";
   title: string;
   body: string;
-  createdAt: string; // YYYY-MM-DD
+  createdAt: string; // ISO (api, UTC) o YYYY-MM-DD (demo)
   read: boolean;
   /** Si el aviso es por una coincidencia, la propiedad encontrada. */
   propertyCode?: string;
@@ -108,7 +108,7 @@ const fromApi = (n: RemoteNotification): AppNotification => ({
   kind: n.propertyCode ? "match" : "system",
   title: n.title,
   body: n.body,
-  createdAt: n.createdAt.slice(0, 10),
+  createdAt: n.createdAt,
   read: n.read,
   ...(n.propertyCode && { propertyCode: n.propertyCode }),
 });

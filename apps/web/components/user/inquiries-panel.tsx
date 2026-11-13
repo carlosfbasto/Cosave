@@ -60,7 +60,7 @@ export function InquiriesPanel({ code }: { code: string }) {
                   </span>
                 </div>
                 <p className="mt-1 whitespace-pre-line text-slate-700">{r.message}</p>
-                <p className="mt-2 text-xs text-slate-500">{formatDate(r.createdAt.slice(0, 10))}</p>
+                <p className="mt-2 text-xs text-slate-500">{formatDate(r.createdAt)}</p>
                 <div className="mt-2 flex flex-wrap gap-4 text-xs">
                   <a href={`mailto:${r.contactEmail}`} className={link}>Escribir a {r.contactEmail}</a>
                   <a href={`tel:+${phone}`} className={link}>Llamar {r.contactPhone}</a>

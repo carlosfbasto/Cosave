@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { EditableField } from "@/components/editable-field";
+import { EditableField, type CommitResult } from "@/components/editable-field";
 import { ApiError } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
 import { useDemoUser } from "@/lib/demo-session";
@@ -28,12 +28,15 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
 
   // Valores guardados con la palomita; mientras no se toquen siguen al perfil.
   const [saved, setSaved] = useState<Saved>({});
-  const [editingKeys, setEditingKeys] = useState<Record<string, boolean>>({});
+  // Cada campo editable entrega aquí su función para aplicar la edición pendiente al enviar.
+  const commits = useRef<Record<string, () => CommitResult>>({});
   const [message, setMessage] = useState("");
   const [messageError, setMessageError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
-  const [unavailable, setUnavailable] = useState(false);
+  // Motivo por el que el api rechazó la consulta (409): la publicación ya no está disponible o es del propio usuario.
+  const [rejected, setRejected] = useState<"unavailable" | "own_property" | null>(null);
+  const unavailable = rejected === "unavailable";
   const [formError, setFormError] = useState<string | null>(null);
 
   const name = saved.name ?? base?.fullName ?? "";
@@ -41,29 +44,42 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
   const phone = saved.phone ?? nationalDigits(base?.phone);
   const region = saved.region ?? regionOf(base?.phone);
 
-  const onEditing = useCallback((k: string, v: boolean) => setEditingKeys((s) => (s[k] === v ? s : { ...s, [k]: v })), []);
+  const register = useCallback((id: string, commit: (() => CommitResult) | null) => {
+    if (commit) commits.current[id] = commit;
+    else delete commits.current[id];
+  }, []);
 
   async function onSubmit(ev: React.FormEvent) {
     ev.preventDefault();
     setFormError(null);
     const msgErr = message.trim() ? null : "Escribe un mensaje.";
     setMessageError(msgErr);
-    if (Object.values(editingKeys).some(Boolean)) {
-      setFormError("Confirma con la palomita verde los datos que estás editando antes de enviar.");
-      return;
+    // Los datos que seguían en edición se aplican solos; si alguno no es válido, su campo muestra el error.
+    const applied: Record<string, { value: string; region: string }> = {};
+    let invalid = false;
+    for (const [id, commit] of Object.entries(commits.current)) {
+      const r = commit();
+      if (r === null) invalid = true;
+      else if (r) applied[id] = r;
     }
-    if (msgErr || validateContactName(name) || validateContactEmail(email) || validateContactPhone(phone) || !who.id || sending) return;
+    if (invalid) return;
+    // El estado aún no se actualizó en este render: se usan los valores recién aplicados.
+    const finalName = applied["cm-name"]?.value ?? name;
+    const finalEmail = applied["cm-email"]?.value ?? email;
+    const finalPhone = applied["cm-phone"]?.value ?? phone;
+    const finalRegion = applied["cm-phone"]?.region ?? region;
+    if (msgErr || validateContactName(finalName) || validateContactEmail(finalEmail) || validateContactPhone(finalPhone) || !who.id || sending) return;
     setSending(true);
     try {
       await sendInquiry({ id: who.id, remote: who.remote }, { code, title }, {
         message: message.trim(),
-        contactName: name.trim(),
-        contactEmail: email.trim(),
-        contactPhone: `${region} ${phone}`,
+        contactName: finalName.trim(),
+        contactEmail: finalEmail.trim(),
+        contactPhone: `${finalRegion} ${finalPhone}`,
       });
       setSent(true);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) setUnavailable(true);
+      if (err instanceof ApiError && err.status === 409) setRejected(err.code === "own_property" ? "own_property" : "unavailable");
       else setFormError("No pudimos registrar tu consulta. Inténtalo de nuevo en unos minutos.");
     } finally {
       setSending(false);
@@ -78,17 +94,21 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
     </div>
   );
 
-  if (unavailable || sent) {
+  if (rejected || sent) {
     return (
       <div className="space-y-5 p-6">
         {header}
-        <div role={unavailable ? "alert" : "status"} className="flex flex-col items-center gap-3 py-4 text-center">
-          {!unavailable && <span className="grid h-14 w-14 place-items-center rounded-full bg-azure text-2xl font-bold text-white">✓</span>}
-          <p className="font-bold text-ink">{unavailable ? "Esta publicación ya no está disponible" : "¡Consulta enviada!"}</p>
+        <div role={rejected ? "alert" : "status"} className="flex flex-col items-center gap-3 py-4 text-center">
+          {!rejected && <span className="grid h-14 w-14 place-items-center rounded-full bg-azure text-2xl font-bold text-white">✓</span>}
+          <p className="font-bold text-ink">
+            {rejected === "own_property" ? "Esta publicación es tuya" : unavailable ? "Esta publicación ya no está disponible" : "¡Consulta enviada!"}
+          </p>
           <p className="text-sm text-slate-600">
-            {unavailable
-              ? `No es posible enviar nuevas consultas sobre “${title}”.`
-              : "El anunciante podrá ver tu consulta. Aparecerá como pendiente hasta que responda."}
+            {rejected === "own_property"
+              ? "No puedes enviarte una consulta a ti mismo. Las consultas que recibas aparecerán en tu perfil, en «Mis propiedades»."
+              : unavailable
+                ? `No es posible enviar nuevas consultas sobre “${title}”.`
+                : "El anunciante podrá ver tu consulta. Aparecerá como pendiente hasta que responda."}
           </p>
         </div>
         <button type="button" onClick={onClose} className="w-full cursor-pointer rounded-lg bg-ink px-4 py-2.5 font-semibold text-white transition-colors hover:bg-ink-hover">
@@ -110,13 +130,13 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
             sanitize={(v) => v.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]/g, "")}
             validate={validateContactName}
             onSave={(v) => setSaved((s) => ({ ...s, name: v }))}
-            onEditing={onEditing}
+            register={register}
           />
           <EditableField
             id="cm-email" label="Correo electrónico" type="email" value={email} placeholder="nombre@correo.com" autoComplete="email"
             validate={validateContactEmail}
             onSave={(v) => setSaved((s) => ({ ...s, email: v }))}
-            onEditing={onEditing}
+            register={register}
           />
           <EditableField
             id="cm-phone" label="Teléfono" type="tel" inputMode="numeric" value={phone} region={region} placeholder="(999) 123-4567" autoComplete="tel-national"
@@ -124,7 +144,7 @@ function ModalBody({ code, title, onClose }: { code: string; title: string; onCl
             format={formatPhone}
             validate={validateContactPhone}
             onSave={(v, r) => setSaved((s) => ({ ...s, phone: v, region: r }))}
-            onEditing={onEditing}
+            register={register}
           />
           <div>
             <label htmlFor="cm-msg" className="mb-1 block text-[0.9rem] font-medium text-ink">Mensaje</label>

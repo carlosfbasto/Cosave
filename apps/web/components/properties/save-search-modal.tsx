@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   OPERATION_TYPES,
   PROPERTY_TYPE_LABEL,
@@ -9,7 +9,7 @@ import {
   type OperationType,
   type PropertyType,
 } from "@cosave/shared";
-import { EditableField } from "@/components/editable-field";
+import { ValidatedField } from "@/components/validated-field";
 import { useCurrentUser } from "@/lib/current-user";
 import { formatMxn, USD_RATE } from "@/lib/mock-data";
 import { saveSearch } from "@/lib/saved-searches";
@@ -78,30 +78,53 @@ const digits = (v: string) => v.replace(/\D/g, "").slice(0, 12);
 const money = (v: string) => (v ? formatMxn(Number(v)) : "");
 const place = (v: string) => (v.trim().length > 80 ? "Máximo 80 caracteres." : null);
 const none = () => null;
+const needOperation = (v: string) => (v ? null : "Elige venta o renta.");
+
+const chip = "rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600";
+
+/** Criterios en texto corto para el resumen del modal (vacío si no hay ninguno que mostrar). */
+function summaryOf(v: SearchDraft): string[] {
+  const price =
+    v.minPrice && v.maxPrice
+      ? `Entre ${money(v.minPrice)} y ${money(v.maxPrice)}`
+      : v.minPrice
+        ? `Desde ${money(v.minPrice)}`
+        : v.maxPrice
+          ? `Hasta ${money(v.maxPrice)}`
+          : "";
+  return [
+    v.operation && OPERATION_LABEL[v.operation],
+    v.propertyType && PROPERTY_TYPE_LABEL[v.propertyType],
+    [v.city.trim(), v.state.trim()].filter(Boolean).join(", "),
+    price,
+  ].filter((x): x is string => !!x);
+}
 
 function ModalBody({ initial, onClose }: { initial: SearchDraft; onClose: () => void }) {
   const who = useCurrentUser();
   const [values, setValues] = useState<SearchDraft>(initial);
-  const [editingKeys, setEditingKeys] = useState<Record<string, boolean>>({});
+  const [submitted, setSubmitted] = useState(false); // tras pulsar «Guardar» se muestran los errores de todos los campos
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const onEditing = useCallback((k: string, v: boolean) => setEditingKeys((s) => (s[k] === v ? s : { ...s, [k]: v })), []);
   const set = (k: keyof SearchDraft) => (v: string) => setValues((s) => ({ ...s, [k]: v }));
+  const minAboveMax = !!values.minPrice && !!values.maxPrice && Number(values.minPrice) > Number(values.maxPrice);
+  const priceOrder = () => (minAboveMax ? "El precio mínimo no puede ser mayor que el máximo." : null);
+  const summary = summaryOf(values);
 
   async function onSubmit(ev: React.FormEvent) {
     ev.preventDefault();
     setFormError(null);
-    if (Object.values(editingKeys).some(Boolean)) {
-      setFormError("Confirma con la palomita verde los datos que estás editando antes de guardar.");
-      return;
-    }
+    setSubmitted(true);
+    // Los errores de cada campo ya se ven bajo el campo; aquí solo se detiene el envío.
+    if (needOperation(values.operation) || place(values.state) || place(values.city) || minAboveMax) return;
     const parsed = savedSearchCriteriaSchema.safeParse({
       operation: values.operation || undefined,
       propertyType: values.propertyType || undefined,
-      state: values.state || undefined,
-      city: values.city || undefined,
+      // Sin espacios sobrantes: un criterio de solo espacios no es «sin dato» y la alerta nunca coincidiría.
+      state: values.state.trim() || undefined,
+      city: values.city.trim() || undefined,
       minPrice: values.minPrice ? Number(values.minPrice) : undefined,
       maxPrice: values.maxPrice ? Number(values.maxPrice) : undefined,
     });
@@ -157,46 +180,34 @@ function ModalBody({ initial, onClose }: { initial: SearchDraft; onClose: () => 
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-4 p-6">
       {header}
-      <EditableField
+      <div aria-live="polite" className="flex flex-wrap items-center gap-1.5">
+        <span className="text-xs font-semibold text-slate-500">Se guardará:</span>
+        {summary.length ? summary.map((t) => <span key={t} className={chip}>{t}</span>) : <span className="text-xs text-slate-500">aún sin criterios</span>}
+      </div>
+      <ValidatedField
         id="ss-operation" label="Operación" value={values.operation} options={operationOptions} placeholder="Venta o renta"
-        validate={(v) => (v ? null : "Elige venta o renta.")}
-        onSave={set("operation")}
-        onEditing={onEditing}
+        validate={needOperation} onChange={set("operation")} showErrors={submitted}
       />
-      <EditableField
-        id="ss-type" label="Tipo de propiedad" value={values.propertyType} options={typeOptions} placeholder="Cualquier tipo" optional
-        validate={none}
-        onSave={set("propertyType")}
-        onEditing={onEditing}
+      <ValidatedField
+        id="ss-type" label="Tipo de propiedad" value={values.propertyType} options={typeOptions} placeholder="Cualquier tipo"
+        validate={none} onChange={set("propertyType")} showErrors={submitted}
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        <EditableField
-          id="ss-state" label="Estado" value={values.state} placeholder="Ej. Yucatán" autoComplete="address-level1" optional
-          validate={place}
-          onSave={set("state")}
-          onEditing={onEditing}
+        <ValidatedField
+          id="ss-state" label="Estado" value={values.state} placeholder="Ej. Yucatán" autoComplete="address-level1"
+          validate={place} onChange={set("state")} showErrors={submitted}
         />
-        <EditableField
-          id="ss-city" label="Ciudad" value={values.city} placeholder="Ej. Mérida" autoComplete="address-level2" optional
-          validate={place}
-          onSave={set("city")}
-          onEditing={onEditing}
+        <ValidatedField
+          id="ss-city" label="Ciudad" value={values.city} placeholder="Ej. Mérida" autoComplete="address-level2"
+          validate={place} onChange={set("city")} showErrors={submitted}
         />
-        <EditableField
-          id="ss-min" label="Precio mínimo" value={values.minPrice} placeholder="$1,500,000" inputMode="numeric" optional
-          sanitize={digits}
-          format={money}
-          validate={none}
-          onSave={set("minPrice")}
-          onEditing={onEditing}
+        <ValidatedField
+          id="ss-min" label="Precio mínimo" value={values.minPrice} placeholder="$1,500,000" inputMode="numeric"
+          sanitize={digits} format={money} validate={priceOrder} onChange={set("minPrice")} showErrors={submitted}
         />
-        <EditableField
-          id="ss-max" label="Precio máximo" value={values.maxPrice} placeholder="$2,000,000" inputMode="numeric" optional
-          sanitize={digits}
-          format={money}
-          validate={none}
-          onSave={set("maxPrice")}
-          onEditing={onEditing}
+        <ValidatedField
+          id="ss-max" label="Precio máximo" value={values.maxPrice} placeholder="$2,000,000" inputMode="numeric"
+          sanitize={digits} format={money} validate={none} onChange={set("maxPrice")} showErrors={submitted}
         />
       </div>
       {formError && <p role="alert" className="text-sm text-red-600">{formError}</p>}

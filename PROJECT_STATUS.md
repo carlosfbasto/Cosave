@@ -1,6 +1,6 @@
 # Estado del proyecto COSAVE
 
-**Última actualización:** 5 de noviembre de 2026 (las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 4 y 5 de noviembre) · **Rama de trabajo:** `docs/estado-ramas`. `main` y `origin/main` están en `0abdca3` (PR #10, solo documentación). Lo último de código que entró es el PR #9 (`feature/admin-rediseno`: rediseño del panel admin, panel de revisión de propiedades y avisos `in_app` al dueño). El PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b) y el PR #8 también están en `main`.
+**Última actualización:** 12 de noviembre de 2026. Las verificaciones de la sección 5 son del 2 de noviembre; las pruebas de la sección 6, del 2 al 5 de noviembre y del 12 de noviembre (bloque «Ejecutadas el 12-nov-2026») · **Rama de trabajo:** `fix/h1-h2-contacto-y-fechas`, creada desde `main`, con tres commits ya confirmados (`e8aada3` H1+H2, `fbe0a35` H3, `0cf5d95` H5) y esta actualización de la documentación como cuarto commit; sin push. `main` y `origin/main` están en `bf72815` (PR #11, solo documentación). Lo último de código que entró en `main` es el PR #9 (`feature/admin-rediseno`: rediseño del panel admin, panel de revisión de propiedades y avisos `in_app` al dueño). El PR #7 (`integracion/m0a-rediseno`: rediseños de publicación y perfil, y M2b) y el PR #8 también están en `main`.
 
 Este archivo es el **estado vivo** del proyecto. No repite el roadmap ni la documentación técnica: los resume y enlaza. Si algo aquí contradice a `README.md` o a `docs/`, revisar ambos y corregir el que esté desactualizado.
 
@@ -133,6 +133,21 @@ No se probaron los endpoints nuevos contra Supabase ni desde el web.
 
 La auditoría de esta jornada la dejó **aprobada con observaciones** (ninguna crítica ni alta); lo abierto está en la sección 10.
 
+**Ejecutadas el 12-nov-2026 sobre las correcciones H1, H2, H3 y H5 (rama `fix/h1-h2-contacto-y-fechas`, antes de confirmar los commits), con `--force` y el servidor de desarrollo detenido:**
+
+| Prueba | Resultado |
+|---|---|
+| `pnpm typecheck` / `pnpm lint` | ✅ / ✅ |
+| `pnpm build` | ✅ (21 páginas estáticas) |
+| `pnpm --filter @cosave/api test` | ✅ 209 de 209 |
+| H1: contactar tu propia propiedad | ✅ Dice «Esta publicación es tuya» (navegador) |
+| H2: fechas en hora de México | ✅ `formatDate` en 15 casos y 3 zonas horarias; fechas de la campana y de Mis propiedades en vivo |
+| H3: «Me interesa» aplica solo los datos editados | ✅ Cuerpo real de la petición verificado (nombre, correo, teléfono y lada) |
+| H3: modal de búsquedas, errores bajo el campo, Enter y `trim` de ciudad/estado | ✅ (navegador) |
+| H5: error de hidratación de `PropertiesExplorer` | ✅ Con un arnés determinista que usa el hook real y simula la carrera (catálogo llegando antes de hidratar): hook actual → error de hidratación; hook corregido → sin error y mismo resultado final. Sin errores ni parpadeo en portada, listado, mapa, rentas, favoritos y ficha. ⚠️ **Limitación:** la carrera **no se reprodujo en la aplicación real** en las pruebas finales (solo apareció una vez, en una carga en frío, antes de la corrección); la demostración depende del arnés, cuyos scripts son temporales y no están en el repositorio |
+
+Sin pruebas automáticas del web (no hay ejecutor): H1, H2, H3 y H5 se verificaron a mano y con scripts temporales que no están en el repositorio.
+
 **Cobertura pendiente:**
 - Sin pruebas automáticas: `postal-codes`, `property-service`, rutas de propiedades, favoritos, consultas, notificaciones y búsquedas guardadas (solo el *matching* tiene pruebas).
 - Sin pruebas del web (`apps/web/package.json` no define script `test` ni runner como vitest, jest o playwright).
@@ -166,13 +181,15 @@ De `docs/DECISIONS.md` y de la sesión:
 
 | Riesgo / dependencia | Detalle |
 |---|---|
-| **Cambios sin commit** | Ninguno al momento de esta actualización: el rediseño del panel, el panel de revisión y los avisos `in_app` están confirmados y fusionados (PR #9, `2712b51`). La devDependency `@electric-sql/pglite` sigue pendiente de tu confirmación expresa. |
+| **Cambios sin commit** | Solo esta documentación (cuarto commit) en la rama `fix/h1-h2-contacto-y-fechas`; H1+H2 (`e8aada3`), H3 (`fbe0a35`) y H5 (`0cf5d95`) ya están confirmados, sin push (el rediseño del panel y los avisos `in_app` ya están en `main`, PR #9). `AGENTS.md` figura como modificado solo por finales de línea (Turbo lo reescribe con `core.autocrlf=true`; el contenido es idéntico a `HEAD`) y no se confirma. La devDependency `@electric-sql/pglite` sigue pendiente de tu confirmación expresa. |
 | **Rama sin integrar** | Una: `feature/primera-etapa` (local y remota) no está fusionada en `main`; no se revisó qué contiene. Las demás ramas de trabajo ya están en `main` (los PR #7 y #9 se fusionaron el 5-nov-2026, UTC). No hay verificaciones automáticas configuradas (el PR #9 mostró 0 checks); solo se corrieron a mano `typecheck`, `lint`, `build` y las pruebas del api. |
 | **Sin límite de peticiones** | Ningún endpoint del api tiene rate limiting, incluido el público `GET /postal-codes/:code`. Pendiente para la Etapa 6. |
 | **`sharp`** | Librería nativa: el despliegue debe instalar sus binarios en la plataforma destino y probarse antes del lanzamiento. |
 | **Catálogo de códigos postales** | Sin él, `GET /postal-codes/:code` da 404 y guardar una propiedad falla con 422. Hoy está cargado en el proyecto `cosave`. En cualquier BD nueva hay que correr `pnpm --filter @cosave/api db:postal-codes <MX.txt>`. |
 | **Catálogo de hasta 500** | El web aún filtra en el cliente; con muchas propiedades se vuelve lento hasta que use `/properties/search`. |
 | **Cobertura baja** | Gran parte de la lógica de negocio no tiene pruebas automáticas. |
+| **Llamadas repetidas al api (H4, 12-nov-2026)** | Medido en `/home`: `/me`, `/favorites` y `/notifications` se piden **una vez** por carga. Repeticiones reales y pequeñas: `/me` una vez por componente que usa `useProfile` (cabecera, panel admin, modal «Me interesa»; no se comparte como sí hace `favorites`); y las listas del admin se piden dos veces, probablemente por el doble efecto de React en desarrollo (sin confirmar con un build de producción). **No es un problema hoy** y se decidió no optimizar ni añadir React Query ni otra caché. El consumo que sí pesa es `/properties/catalog` (hasta 500 propiedades en cada pantalla que lo usa), que se resuelve al migrar el web a `/properties/search*`. Revisar si aparece lentitud real. Si algún día se comparte `/me`, hay que separarlo por usuario y refrescarlo al editar el perfil o cambiar de rol. |
+| **Correos `pending` acumulados** | Hay avisos del canal `email` en `pending` (hoy 4, de propiedades de prueba) que nunca se enviaron. Al integrar Resend (M4) hay que decidir si se envían o se descartan, para no mandar correos viejos de golpe. |
 | **Documentación desactualizada** | Corregidas las discrepancias conocidas (sección 11). `docs/DESIGN.md` y `docs/CONTRIBUTING.md` no se revisaron. |
 | **Dependencia del correo** | Los avisos por email dependen de elegir e integrar Resend. |
 
@@ -180,15 +197,19 @@ De `docs/DECISIONS.md` y de la sesión:
 
 En orden sugerido. Cada una requiere autorización explícita antes de empezar.
 
-0. **Comprobar el panel admin ya fusionado (PR #9):** probar la vista móvil y aprobar o retirar una propiedad, que siguen sin comprobarse. La cuenta del administrador conserva `COS-001003` rechazada con un aviso de prueba.
-1. **Recorrido manual autenticado** de `/vender`, perfil, favoritos y mapa (subida de fotos, Ctrl+rueda en el mapa, vista previa). Es la excepción abierta de M0. 🧪
-2. **Confirmar los cambios de documentación y `PROJECT_STATUS.md`** con un commit en la rama, y decidir el PR hacia `main`.
+0. **Panel admin (PR #9):** aprobar y retirar una propiedad se comprobaron con datos reales el 12-nov-2026 (recorrido M0). **Falta la vista móvil del admin**, que se probará a mano en el navegador. La cuenta del administrador conserva `COS-001003` rechazada con un aviso de prueba y `COS-001004` retirada (con su foto) como dato de prueba conservado a propósito.
+1. **Recorrido manual autenticado (M0, 12-nov-2026):** publicar con foto, enviar a revisión, aprobar, retirar, favoritos, guardar una búsqueda, mapa y las pantallas del perfil funcionaron. **Siguen sin comprobarse:** Ctrl+rueda y gestos táctiles del mapa, enviar una consulta real y ver la bandeja del dueño (necesitan una segunda cuenta real), el correo de confirmación de cuenta y la recuperación de contraseña. 🧪
+2. **Rama `fix/h1-h2-contacto-y-fechas`:** commits 1 a 3 confirmados (`e8aada3`, `fbe0a35`, `0cf5d95`); el cuarto es esta documentación. Falta decidir el PR hacia `main` y el push, que no se hacen sin autorización.
 3. **M2b (api implementado y auditado):** probar `/properties/search*` contra Supabase y migrar el web para consumirlos. Confirmar antes la devDependency `@electric-sql/pglite`.
 4. Alternativa a M2: **comparador de propiedades** (Etapa 4), tras decidir dónde se guarda.
 5. **Pruebas automáticas** de `property-service` y de las rutas principales, antes de seguir con funciones nuevas.
 6. Etapa 5: flujo de **asesores** y avisos por **email**.
 7. Etapa 6: **rate limiting**, respaldos y revisión de seguridad.
 8. **Mejoras del panel admin** (de la planificación del 5-nov): paginación y filtro por rol en usuarios y solicitudes, pantalla de bitácora, y revisión atómica de publicaciones (evita que dos admins revisen a la vez; toca el api). Menores de la auditoría: el panel no abre con `?ver=` de una propiedad fuera de la página cargada, un motivo de solo puntos queda vacío en el aviso, «Rechazar» y «Retirar» perdieron el rojo al pasar el cursor y los estilos de los chips están duplicados.
+9. **Diseño móvil (pendiente; módulo posterior a M1, no implementar antes).** Hallazgos de las capturas del admin en ~600 px (12-nov-2026): (a) las tablas de Propiedades, Usuarios y Solicitudes conservan su ancho de escritorio y se desplazan en horizontal (en Usuarios el nombre queda cortado; en Propiedades se pierde el nombre al ver Acciones) → mostrar cada fila como tarjeta por debajo de ~768 px; (b) el cajón del menú oculta «Configuración» en pantallas bajas y tapa «Cerrar sesión» → compactar la cabecera y dejar el pie fijo; (c) los chips de estado ocupan 4 líneas → una fila con desplazamiento o un selector. **También falta revisar las pantallas públicas en móvil** (portada, listado, ficha, publicar, perfil), que no se han revisado.
+10. **Otros pendientes anotados el 12-nov-2026:** ocultar «Me interesa» al dueño de la propiedad (mejora aparte, no incluida en la corrección de H1); y `EditableField` conserva props sin uso (`options`, `optional`, `onEditing`) tras H3, por decisión expresa de no limpiarlas ahora.
+11. **H5, error de hidratación de `PropertiesExplorer`: corregido el 12-nov-2026** (commit `0cf5d95`). Causa: `useCatalog` leía una variable de módulo en el render inicial y, si el catálogo llegaba antes de que el explorador se hidratara (está dentro de un `Suspense`), el cliente no coincidía con el HTML del servidor («Cargando propiedades…»). Corrección: `useSyncExternalStore` con un snapshot de servidor «no listo» (`lib/use-catalog.ts`). Limitación documentada en la sección 6: la carrera no se reprodujo en la app real tras la corrección y la prueba depende de un arnés determinista.
+12. **M1 «Quiero vender» (Etapa 5): aprobado, a implementar por etapas** tras confirmar el cuarto commit y comprobar la rama `feature/m1-quiero-vender`: (1) API, validaciones, permisos y pruebas; (2) avisos `in_app` al administrador y al solicitante; (3) pantalla `/quiero-vender`; (4) «Mis solicitudes» en el perfil; (5) panel admin; (6) pruebas completas y documentación. Decisiones: `open` y `assigned` cuentan como abiertas; una por tipo y persona (candado transaccional, sin migración); `closed` permite otra; cualquier cuenta con sesión puede solicitar; solo avisos `in_app`, sin correo ni enlaces; estados visibles Pendiente / En proceso / Cerrada; «Mis solicitudes» filtra solo por el usuario del token; reabrir una solicitud con otra abierta del mismo tipo da error claro. Las pruebas de aislamiento entre usuarios necesitan una segunda cuenta real, a coordinar con el equipo.
 
 ## 11. Discrepancias de documentación detectadas
 

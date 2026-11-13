@@ -73,7 +73,7 @@ export function AccountProfile({ id }: { id: string }) {
   ];
   const publicRows: [string, string][] = [
     ["Ciudad", profile.city ? `${profile.city}` : "Sin ciudad"],
-    ["Miembro desde", profile.createdAt ? formatDate(profile.createdAt.slice(0, 10)) : "—"],
+    ["Miembro desde", profile.createdAt ? formatDate(profile.createdAt) : "—"],
   ];
 
   const form = (
@@ -105,7 +105,7 @@ export function AccountProfile({ id }: { id: string }) {
 
   return (
     <ProfileOverview
-      user={{ id: profile.id, fullName: profile.fullName, email: profile.email, avatar: initialsAvatar(profile.fullName), city: profile.city, joinedAt: profile.createdAt ? formatDate(profile.createdAt.slice(0, 10)) : null }}
+      user={{ id: profile.id, fullName: profile.fullName, email: profile.email, avatar: initialsAvatar(profile.fullName), city: profile.city, joinedAt: profile.createdAt ? formatDate(profile.createdAt) : null }}
       details={editing ? form : <ProfileDetails userId={profile.id} publicRows={publicRows} privateRows={privateRows} />}
       detailsAction={
         !editing && (
