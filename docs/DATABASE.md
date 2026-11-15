@@ -39,7 +39,7 @@ erDiagram
 | **Inquiry** | Consulta "Me interesa": propiedad, remitente, mensaje, datos de contacto compartidos y estado (`pending` hasta que el anunciante responda, luego `answered`). |
 | **SavedSearch** | "No encontré lo que busco": criterios estructurados + canales de aviso (USER_REQUESTS del README). |
 | **SearchMatch** | Coincidencia búsqueda ↔ propiedad; `notifiedAt` evita avisos duplicados. |
-| **SellerRequest** | Vendedor pide publicar solo, buscar asesor o contratar servicios. |
+| **SellerRequest** | Solicitud general de atención del cliente (no de una propiedad): publicar por cuenta propia, pedir un asesor o preguntar por servicios. Una abierta (`open`/`assigned`) por tipo y persona; se protege con un candado de PostgreSQL en el api, **no** con una restricción única (ver `docs/API.md`). Sin índice por `sellerId` (solo `status, kind`): suficiente con pocas filas; añadirlo requeriría migración. |
 | **Notification** | Aviso por email / WhatsApp / push con su estado de envío, o dentro de la app (`in_app`, campana del header) con `readAt` para saber si ya se leyó. |
 | **AuditLog** | Bitácora de acciones importantes: quién (`actorId`), qué (`action`), sobre qué (`entityType` + `entityId`) y qué cambió (`before` / `after`, solo los campos relevantes). Solo admite inserciones. |
 

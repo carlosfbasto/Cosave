@@ -7,7 +7,7 @@ Implementado: `GET /health` (fuera de `/api/v1`) y los endpoints marcados ✅. E
 ```json
 { "error": { "code": "not_found", "message": "Ruta no encontrada" } }
 ```
-Códigos: `unauthorized` 401 · `forbidden` 403 · `not_found` 404 · `unavailable` / `own_property` / `account_conflict` / `invalid_transition` / `locked` / `limited` / `possible_duplicate` 409 · `too_large` 413 · `validation` / `incomplete` / `invalid_image` / `blurry_image` / `unknown_postal_code` / `too_many_images` 422 · `internal` 500.
+Códigos: `unauthorized` 401 · `forbidden` 403 · `not_found` 404 · `unavailable` / `own_property` / `account_conflict` / `invalid_transition` / `locked` / `limited` / `possible_duplicate` / `request_already_open` 409 · `too_large` 413 · `validation` / `incomplete` / `invalid_image` / `blurry_image` / `unknown_postal_code` / `too_many_images` 422 · `internal` 500 · `busy` 503 (transitorio: el sistema está ocupado; se puede reintentar).
 
 Respuestas exitosas: `{ "data": ..., "meta": ... }`. Error de validación: 422 con `details`.
 
@@ -43,7 +43,21 @@ Respuestas exitosas: `{ "data": ..., "meta": ... }`. Error de validación: 422 c
 | 5 ✅ | `POST /saved-searches` · `DELETE /saved-searches/:id` | Guardar criterios `{ operation, propertyType?, state?, city?, minPrice?, maxPrice? }` (201) / eliminar una búsqueda propia |
 | 5 ✅ | `GET /notifications?limit` | Mis avisos `in_app`, más recientes primero: coincidencias de búsquedas guardadas y resultado de la revisión de mis publicaciones (aprobada, rechazada o retirada, con el motivo). `propertyCode` viene en las coincidencias y en las aprobaciones; en rechazos y retiros es `null`. `meta.unread` = sin leer. Requiere cuenta |
 | 5 ✅ | `PATCH /notifications/:id/read` · `POST /notifications/read-all` · `DELETE /notifications/:id` | Marcar uno o todos como leídos (204) / eliminar uno propio (204; 404 si no es tuyo) |
-| 5 | `GET /professionals` · `POST /seller-requests` | Asesores y solicitudes |
+| 5 ✅ (M1) | `POST /seller-requests` | Solicitud general de atención (ver «Solicitudes de atención»). Body estricto `{ kind, notes? }`, `kind` = `self_publish` · `find_agent` · `services`; notas opcionales, recortadas, máx. 500. Requiere cuenta, sin rol. 201 con `{ id, kind, status, notes, createdAt }`; 409 `request_already_open` si ya tienes una `open`/`assigned` de ese tipo; 422 con campos no permitidos; 503 `busy` si el sistema está ocupado |
+| 5 ✅ (M1) | `GET /seller-requests?page&pageSize` | **Solo mis solicitudes** (filtra por el usuario del token; no admite filtrar por otra persona). Más recientes primero, `pageSize` 1–50 (defecto 20), `meta` con `total`. Sin `sellerId` ni `agentId` |
+| 5 ✅ | `GET /admin/seller-requests?status&page&pageSize` · `PATCH /admin/seller-requests/:id` | Solo admin. Listar todas / `{ status }` = `open` · `assigned` · `closed`. **Reabrir** una `closed` (a `open` o `assigned`) responde 409 `request_already_open` si esa persona ya tiene otra abierta del mismo tipo; las demás transiciones no cambian. No asigna asesor (`agentId` no se toca): `assigned` es solo la etiqueta «En proceso» y no asigna automáticamente a nadie; su significado funcional se resolverá antes de implementar las pantallas |
+| 5 | `GET /professionals` | Asesores (planeado) |
+
+### Solicitudes de atención (`SellerRequest`)
+
+Es una **solicitud general de atención del cliente**, no un expediente de una propiedad (no lleva `propertyId`):
+- `self_publish`: interés en publicar por cuenta propia. **No publica nada** automáticamente.
+- `find_agent`: pide que lo atienda un asesor.
+- `services`: pide información o atención sobre servicios. **No confirma contrataciones ni pagos.**
+
+**Una abierta por tipo y persona.** `open` y `assigned` cuentan como abiertas; con la anterior `closed` se puede crear otra. Estados visibles: Pendiente (`open`) · En proceso (`assigned`) · Cerrada (`closed`).
+
+**Cómo se garantiza (sin migración).** Crear y reabrir toman el mismo candado de PostgreSQL (`pg_advisory_xact_lock`) por persona y tipo, dentro de una transacción `ReadCommitted` corta, y solo después comprueban si ya hay una abierta. Si el candado tarda más de 3 s o la transacción se agota, se responde 503 `busy` (fallo técnico, no un 409 de negocio). **Límites:** el candado solo protege si *todas* las operaciones que abren o reabren lo respetan (hoy: `lib/seller-requests.ts`); una escritura directa en la tabla lo esquiva, y **no equivale a una restricción única de la base de datos**. El tope práctico (3 abiertas por persona, una por tipo) **no es un límite de peticiones**: no sustituye al rate limiting de la Etapa 6.
 
 ## Búsqueda en el servidor (`GET /properties/search`)
 
