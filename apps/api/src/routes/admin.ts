@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { AUDIT_ACTIONS, canTransition, IMAGE_LIMITS, PROPERTY_STATUSES, userRoleSchema } from "@cosave/shared";
+import { AUDIT_ACTIONS, canTransition, IMAGE_LIMITS, PROPERTY_STATUSES, sellerRequestStatusSchema, userRoleSchema } from "@cosave/shared";
 import { auditCreate } from "../lib/audit.js";
 import { env } from "../lib/env.js";
 import { handler, HttpError } from "../lib/errors.js";
@@ -9,6 +9,7 @@ import { ownerView, propertyInclude } from "../lib/property-view.js";
 import { prisma } from "../lib/prisma.js";
 import { reviewNotices } from "../lib/review-notifications.js";
 import { notifySavedSearchMatches } from "../lib/search-matching.js";
+import { changeSellerRequestStatus } from "../lib/seller-requests.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 export const adminRouter = Router();
@@ -183,7 +184,7 @@ adminRouter.post(
 );
 
 const requestList = z.object({
-  status: z.enum(["open", "assigned", "closed"]).optional(),
+  status: sellerRequestStatusSchema.optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
@@ -212,10 +213,9 @@ adminRouter.patch(
   "/seller-requests/:id",
   handler(async (req, res) => {
     const id = z.string().uuid().parse(req.params["id"]);
-    const { status } = z.object({ status: z.enum(["open", "assigned", "closed"]) }).strict().parse(req.body);
-    const exists = await prisma.sellerRequest.findUnique({ where: { id }, select: { id: true } });
-    if (!exists) throw new HttpError(404, "not_found", "Solicitud no encontrada");
-    const data = await prisma.sellerRequest.update({ where: { id }, data: { status }, select: { id: true, kind: true, status: true } });
+    const { status } = z.object({ status: sellerRequestStatusSchema }).strict().parse(req.body);
+    // Reabrir una cerrada no puede dejar dos abiertas del mismo tipo para la misma persona (ver lib/seller-requests.ts).
+    const data = await changeSellerRequestStatus(prisma, id, status);
     res.json({ data });
   }),
 );

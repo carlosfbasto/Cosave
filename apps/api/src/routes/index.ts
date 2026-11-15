@@ -7,6 +7,7 @@ import { notificationsRouter } from "./notifications.js";
 import { postalCodesRouter } from "./postalCodes.js";
 import { propertiesRouter } from "./properties.js";
 import { savedSearchesRouter } from "./savedSearches.js";
+import { sellerRequestsRouter } from "./sellerRequests.js";
 
 /** Router de /api/v1. Los módulos se montan aquí por etapa (ver docs/API.md). */
 export const apiRouter = Router();
@@ -19,3 +20,4 @@ apiRouter.use("/favorites", favoritesRouter);
 apiRouter.use("/inquiries", inquiriesRouter);
 apiRouter.use("/saved-searches", savedSearchesRouter);
 apiRouter.use("/notifications", notificationsRouter);
+apiRouter.use("/seller-requests", sellerRequestsRouter);
